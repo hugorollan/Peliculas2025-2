@@ -147,17 +147,18 @@
     const resultsView = (resultados) => {
         let view = `
         <div style="width: 100%; padding: 20px;">
-            <h2 style="text-align: center; color: var(--primary);">Resultados de la búsqueda</h2>`;
+            <h2 style="text-align: center; color: white; font-size: 28px; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Resultados de la búsqueda</h2>`;
         
         if (!resultados || resultados.length === 0) {
-            view += `<div style='color:#888; margin:20px 0; text-align: center;'>No se encontraron películas</div>`;
+            view += `<div style='color: #90cea1; margin:20px 0; text-align: center; font-size: 16px;'>No se encontraron películas</div>`;
         } else {
-            view += `<div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">`;
+            view += `<div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;">`;
             resultados.forEach(pelicula => {
                 const posterUrl = pelicula.poster_path 
                     ? `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`
                     : 'files/placeholder.png';
                 const releaseYear = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
+                const rating = pelicula.vote_average ? pelicula.vote_average.toFixed(1) : 'N/A';
                 
                 view += `
                 <div class="movie">
@@ -165,7 +166,10 @@
                         <img src="${posterUrl}" onerror="this.src='files/placeholder.png'"/>
                     </div>
                     <div class="title">${pelicula.title || "<em>Sin título</em>"}</div>
-                    <p style="font-size: 11px; margin: 5px 0; color: #666;">Año: ${releaseYear}</p>
+                    <div style="display: flex; justify-content: space-around; padding: 8px 10px; font-size: 12px; color: #666;">
+                        <span>⭐ ${rating}</span>
+                        <span>📅 ${releaseYear}</span>
+                    </div>
                     <div class="actions">
                         <button class="add-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'>Añadir</button>
                     </div>
@@ -175,7 +179,7 @@
         }
         
         view += `
-            <div style="text-align: center; margin-top: 20px;">
+            <div style="text-align: center; margin-top: 30px;">
                 <button class="index">Volver al inicio</button>
             </div>
         </div>`;
