@@ -95,6 +95,8 @@
                 <h2 style="margin-bottom:15px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
                 <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
                 <p><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                ${pelicula.rating ? `<p><strong>Calificación:</strong> ${pelicula.rating} / 10</p>` : ''}
+                ${pelicula.generos && pelicula.generos.length > 0 ? `<p><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
                 ${pelicula.resumen ? `<p style='margin:10px 0; color:#444; font-size:13px;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
                 <div class="actions">
                     <button class="index">Volver</button>
@@ -326,11 +328,44 @@
                 console.warn('No se pudo obtener el director:', err);
             }
 
+            // Mapeo de IDs de géneros a nombres en español (TMDb)
+            const GENRE_MAP = {
+                28: 'Acción',
+                12: 'Aventura',
+                16: 'Animación',
+                35: 'Comedia',
+                80: 'Crimen',
+                99: 'Documental',
+                18: 'Drama',
+                10751: 'Familiar',
+                14: 'Fantasía',
+                36: 'Historia',
+                27: 'Terror',
+                10402: 'Música',
+                9648: 'Misterio',
+                10749: 'Romance',
+                878: 'Ciencia ficción',
+                10770: 'Película de TV',
+                53: 'Suspense',
+                10752: 'Bélica',
+                37: 'Western'
+            };
+
+            let generos = [];
+            if (Array.isArray(movieData.genre_ids) && movieData.genre_ids.length > 0) {
+                generos = movieData.genre_ids.map(id => GENRE_MAP[id] || id);
+            } else if (movieData.genres) {
+                generos = movieData.genres.map(g => g.name);
+            }
+            const rating = typeof movieData.vote_average === 'number' ? movieData.vote_average : '';
+
             const nuevaPelicula = {
                 titulo: movieData.title,
                 director: director,
                 miniatura: posterUrl,
-                resumen: movieData.overview || ''
+                resumen: movieData.overview || '',
+                rating: rating,
+                generos: generos
             };
 
             mis_peliculas.push(nuevaPelicula);
