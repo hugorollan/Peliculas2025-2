@@ -114,15 +114,22 @@
         // Mostrar reparto si está disponible
         let castSection = '';
         if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
-            const castList = pelicula.cast.slice(0, 8).map(actor => 
-                `<div class="cast-badge">
-                    ${actor.name}${actor.character ? ` <span class="cast-character">(${actor.character})</span>` : ''}
-                </div>`
-            ).join('');
+            const castList = pelicula.cast.slice(0, 8).map(actor => {
+                const profileUrl = actor.profile_path 
+                    ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
+                    : 'files/placeholder.png';
+                return `<div class="cast-member">
+                    <img src="${profileUrl}" alt="${actor.name}" class="cast-photo" onerror="this.src='files/placeholder.png'" />
+                    <div class="cast-info">
+                        <div class="cast-name">${actor.name}</div>
+                        ${actor.character ? `<div class="cast-character">${actor.character}</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
             castSection = `
                 <div style="margin-top:16px;">
                     <p style="font-weight:600; margin-bottom:8px; text-align:left;"><strong>Reparto:</strong></p>
-                    <div style="text-align:left; line-height:1.8;">
+                    <div class="cast-grid">
                         ${castList}
                     </div>
                 </div>
@@ -384,7 +391,8 @@
                     if (creditsData.cast && Array.isArray(creditsData.cast)) {
                         cast = creditsData.cast.slice(0, 8).map(actor => ({
                             name: actor.name,
-                            character: actor.character
+                            character: actor.character,
+                            profile_path: actor.profile_path
                         }));
                     }
                 }
