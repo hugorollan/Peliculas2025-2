@@ -290,11 +290,10 @@
     const addFromAPIContr = async (ev) => {
         try {
             const movieData = JSON.parse(ev.target.dataset.movie.replace(/&apos;/g, "'"));
-            
             const posterUrl = movieData.poster_path 
                 ? `https://image.tmdb.org/t/p/w500${movieData.poster_path}`
                 : 'files/placeholder.png';
-            
+
             // Verificar si la película ya existe (por título)
             const yaExiste = mis_peliculas.some(p => p.titulo === movieData.title);
             if (yaExiste) {
@@ -302,16 +301,39 @@
                 return;
             }
 
-            // Extraer el director de los créditos si está disponible, sino usar un valor por defecto
+            // Obtener el director usando el endpoint de créditos de TMDb
+            let director = 'Desconocido';
+            try {
+                const options = {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        Authorization: `Bearer ${TMDB_API_KEY}`
+                    }
+                };
+                const creditsRes = await fetch(`https://api.themoviedb.org/3/movie/${movieData.id}/credits?language=es-ES`, options);
+                if (creditsRes.ok) {
+                    const creditsData = await creditsRes.json();
+                    if (creditsData.crew && Array.isArray(creditsData.crew)) {
+                        const directorObj = creditsData.crew.find(persona => persona.job === 'Director');
+                        if (directorObj) {
+                            director = directorObj.name;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('No se pudo obtener el director:', err);
+            }
+
             const nuevaPelicula = {
                 titulo: movieData.title,
-                director: 'TMDb', // Valor por defecto ya que la API de búsqueda no incluye el director
+                director: director,
                 miniatura: posterUrl
             };
 
             mis_peliculas.push(nuevaPelicula);
             await updateAPI(mis_peliculas);
-            
+
             alert(`"${movieData.title}" ha sido añadida a tu lista`);
             indexContr();
         } catch (err) {
