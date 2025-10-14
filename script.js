@@ -3,11 +3,11 @@
     // API Key de TMDb
     const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzOTgxNWVjZTI4ZjcyNWJlZGRmY2Y3OGE0YzRjZGU0ZiIsIm5iZiI6MTc2MDQ1NjUxNS4xNDcsInN1YiI6IjY4ZWU2ZjQzNDYzMzQ0Yjg0MTlkZjQ3MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ejdXz4pm0dZn0OAVJvJ16R8SwNAa-MBkO_yttUiblLk';
 
-    let mis_peliculas_iniciales = [
-       {titulo: "Superlópez",   director: "Javier Ruiz Caldera", "miniatura": "files/superlopez.png"},
-       {titulo: "Jurassic Park", director: "Steven Spielberg", "miniatura": "files/jurassicpark.png"},
-       {titulo: "Interstellar",  director: "Christopher Nolan", "miniatura": "files/interstellar.png"}
-    ];
+     let mis_peliculas_iniciales = [
+         {titulo: "Superlópez",   director: "Javier Ruiz Caldera", año: "2018", miniatura: "files/superlopez.png"},
+         {titulo: "Jurassic Park", director: "Steven Spielberg", año: "1993", miniatura: "files/jurassicpark.png"},
+         {titulo: "Interstellar",  director: "Christopher Nolan", año: "2014", miniatura: "files/interstellar.png"}
+     ];
 
     let mis_peliculas = [];
 
@@ -33,34 +33,32 @@
     // VISTAS
 
     const indexView = (peliculas) => {
-                let i=0;
-                let view = "";
-
-                if (peliculas.length === 0) {
-                        view += `<div style='color:#888; margin:20px 0;'>No hay películas</div>`;
-                }
-
-                while(i < peliculas.length) {
-                    view += `
-                <div class="movie">
-                     <div class="movie-img">
-                        <img src="${peliculas[i].miniatura}" onerror="this.src='files/placeholder.png'"/>
-                     </div>
-                     <div class="title">
-                             ${peliculas[i].titulo || "<em>Sin título</em>"}
-                     </div>
-                     <div class="actions">
-                             <button class="show" data-my-id="${i}">ver</button>
-                             <button class="edit" data-my-id="${i}">editar</button>
-                             <button class="delete" data-my-id="${i}">borrar</button>
-                        </div>
-                </div>\n`;
-                    i = i + 1;
-                }
-
-            // Eliminado el bloque de acciones inferior para evitar menú duplicado
-
-                return view;
+        let i=0;
+        let view = "";
+        if (peliculas.length === 0) {
+            view += `<div style='color:#888; margin:20px 0;'>No hay películas</div>`;
+        }
+        while(i < peliculas.length) {
+            view += `
+            <div class="movie">
+                <div class="movie-img">
+                    <img src="${peliculas[i].miniatura}" onerror="this.src='files/placeholder.png'"/>
+                </div>
+                <div class="title">
+                    ${peliculas[i].titulo || "<em>Sin título</em>"}
+                </div>
+                <div style="text-align:center; font-size:12px; color:#666; margin-bottom:6px;">
+                    ${peliculas[i].año ? `Año: ${peliculas[i].año}` : ""}
+                </div>
+                <div class="actions">
+                    <button class="show" data-my-id="${i}">ver</button>
+                    <button class="edit" data-my-id="${i}">editar</button>
+                    <button class="delete" data-my-id="${i}">borrar</button>
+                </div>
+            </div>\n`;
+            i = i + 1;
+        }
+        return view;
     }
 
     const editView = (i, pelicula) => {
@@ -75,6 +73,10 @@
             <div class="field" style="width:100%; margin-bottom:10px;">
                 Director <br>
                 <input type="text" id="director" placeholder="Director" value="${pelicula.director}" style="width:100%;">
+            </div>
+            <div class="field" style="width:100%; margin-bottom:10px;">
+                Año <br>
+                <input type="text" id="año" placeholder="Año" value="${pelicula.año || ''}" style="width:100%;">
             </div>
             <div class="field" style="width:100%; margin-bottom:10px;">
                 Miniatura <br>
@@ -95,6 +97,7 @@
                 <h2 style="margin-bottom:15px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
                 <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
                 <p><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                <p><strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
                 ${pelicula.rating ? `<p><strong>Calificación:</strong> ${pelicula.rating} / 10</p>` : ''}
                 ${pelicula.generos && pelicula.generos.length > 0 ? `<p><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
                 ${pelicula.resumen ? `<p style='margin:10px 0; color:#444; font-size:13px;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
@@ -117,6 +120,10 @@
             <div class="field">
                 Director <br>
                 <input type="text" id="director" placeholder="Director">
+            </div>
+            <div class="field">
+                Año <br>
+                <input type="text" id="año" placeholder="Año">
             </div>
             <div class="field">
                 Miniatura <br>
@@ -221,8 +228,9 @@
     const createContr = async () => {
         const titulo = document.getElementById('titulo').value;
         const director = document.getElementById('director').value;
+        const año = document.getElementById('año').value;
         const miniatura = document.getElementById('miniatura').value;
-        mis_peliculas.push({titulo, director, miniatura});
+        mis_peliculas.push({titulo, director, año, miniatura});
         await updateAPI(mis_peliculas);
         indexContr();
     }
@@ -234,6 +242,7 @@
     const updateContr = async (i) => {
         mis_peliculas[i].titulo   = document.getElementById('titulo').value;
         mis_peliculas[i].director = document.getElementById('director').value;
+        mis_peliculas[i].año      = document.getElementById('año').value;
         mis_peliculas[i].miniatura = document.getElementById('miniatura').value;
         await updateAPI(mis_peliculas);
         indexContr();
@@ -366,6 +375,7 @@
             const nuevaPelicula = {
                 titulo: movieData.title,
                 director: director,
+                año: movieData.release_date ? movieData.release_date.split('-')[0] : '',
                 miniatura: posterUrl,
                 resumen: movieData.overview || '',
                 rating: rating,
