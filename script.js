@@ -100,28 +100,52 @@
             const circumference = 2 * Math.PI * radius;
             const offset = circumference * (1 - percent / 100);
             ratingCircle = `
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                     <svg width="50" height="50" style="display:block;">
                         <circle cx="25" cy="25" r="${radius}" stroke="#eee" stroke-width="${stroke}" fill="none" />
                         <circle cx="25" cy="25" r="${radius}" stroke="#20b38e" stroke-width="${stroke}" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s;" />
                         <text x="25" y="30" text-anchor="middle" font-size="13" fill="#222" font-weight="bold">${percent}%</text>
                     </svg>
-                    <span style="font-size:1rem; color:#20b38e; font-weight:bold;">Puntuación usuarios</span>
+                    <span style="font-size:0.95rem; color:#20b38e; font-weight:600;">Puntuación usuarios</span>
                 </div>
             `;
         }
+
+        // Mostrar reparto si está disponible
+        let castSection = '';
+        if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
+            const castList = pelicula.cast.slice(0, 8).map(actor => 
+                `<div style="display:inline-block; margin:4px 8px 4px 0; padding:6px 12px; background:#f0f0f0; border-radius:20px; font-size:13px; color:#333;">
+                    ${actor.name}${actor.character ? ` <span style="color:#666;">(${actor.character})</span>` : ''}
+                </div>`
+            ).join('');
+            castSection = `
+                <div style="margin-top:16px;">
+                    <p style="font-weight:600; margin-bottom:8px; text-align:left;"><strong>Reparto:</strong></p>
+                    <div style="text-align:left; line-height:1.8;">
+                        ${castList}
+                    </div>
+                </div>
+            `;
+        }
+
         return `
         <div class="modal-bg">
-            <div class="modal">
-                <h2 style="margin-bottom:15px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
-                <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
-                <p><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
-                <p><strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
-                ${ratingCircle}
-                ${pelicula.generos && pelicula.generos.length > 0 ? `<p><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
-                ${pelicula.resumen ? `<p style='margin:10px 0; color:#444; font-size:13px;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
-                <div class="actions">
-                    <button class="index">Volver</button>
+            <div class="modal modal-horizontal">
+                <div class="modal-poster">
+                    <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
+                </div>
+                <div class="modal-info">
+                    <h2 style="margin-top:0; margin-bottom:16px; text-align:left;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
+                    <p style="text-align:left;"><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                    <p style="text-align:left;"><strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
+                    ${ratingCircle}
+                    ${pelicula.generos && pelicula.generos.length > 0 ? `<p style="text-align:left;"><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
+                    ${pelicula.resumen ? `<p style='margin:12px 0; color:#444; font-size:14px; text-align:left; line-height:1.6;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
+                    ${castSection}
+                    <div class="actions" style="justify-content:flex-start; margin-top:20px;">
+                        <button class="index">Volver</button>
+                    </div>
                 </div>
             </div>
         </div>`;
@@ -336,8 +360,9 @@
                 return;
             }
 
-            // Obtener el director usando el endpoint de créditos de TMDb
+            // Obtener el director y reparto usando el endpoint de créditos de TMDb
             let director = 'Desconocido';
+            let cast = [];
             try {
                 const options = {
                     method: 'GET',
@@ -355,9 +380,16 @@
                             director = directorObj.name;
                         }
                     }
+                    // Obtener el reparto (cast)
+                    if (creditsData.cast && Array.isArray(creditsData.cast)) {
+                        cast = creditsData.cast.slice(0, 10).map(actor => ({
+                            name: actor.name,
+                            character: actor.character
+                        }));
+                    }
                 }
             } catch (err) {
-                console.warn('No se pudo obtener el director:', err);
+                console.warn('No se pudo obtener el director o reparto:', err);
             }
 
             // Mapeo de IDs de géneros a nombres en español (TMDb)
@@ -398,7 +430,8 @@
                 miniatura: posterUrl,
                 resumen: movieData.overview || '',
                 rating: rating,
-                generos: generos
+                generos: generos,
+                cast: cast
             };
 
             mis_peliculas.push(nuevaPelicula);
