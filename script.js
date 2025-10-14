@@ -47,7 +47,7 @@
                 <div class="title">
                     ${peliculas[i].titulo || "<em>Sin título</em>"}
                 </div>
-                <div style="text-align:center; font-size:12px; color:#666; margin-bottom:6px;">
+                <div style="text-align:center; font-size:10px; color:#666; margin-bottom:4px; padding:0 4px;">
                     ${peliculas[i].año ? `Año: ${peliculas[i].año}` : ""}
                 </div>
                 <div class="actions">
@@ -114,7 +114,7 @@
         // Mostrar reparto si está disponible
         let castSection = '';
         if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
-            const castList = pelicula.cast.slice(0, 8).map(actor => {
+            const castList = pelicula.cast.slice(0, 12).map(actor => {
                 const profileUrl = actor.profile_path 
                     ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
                     : 'files/placeholder.png';
@@ -212,7 +212,7 @@
         if (!resultados || resultados.length === 0) {
             view += `<div style='color: #90cea1; margin:20px 0; text-align: center; font-size: 16px;'>No se encontraron películas</div>`;
         } else {
-            view += `<div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;">`;
+            view += `<div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 700px; margin: 0 auto;">`;
             resultados.forEach(pelicula => {
                 const posterUrl = pelicula.poster_path 
                     ? `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`
@@ -226,7 +226,7 @@
                         <img src="${posterUrl}" onerror="this.src='files/placeholder.png'"/>
                     </div>
                     <div class="title">${pelicula.title || "<em>Sin título</em>"}</div>
-                    <div style="display: flex; justify-content: space-around; padding: 8px 10px; font-size: 12px; color: #666;">
+                    <div style="display: flex; justify-content: space-around; padding: 4px 8px; font-size: 10px; color: #666;">
                         <span>⭐ ${rating}</span>
                         <span>📅 ${releaseYear}</span>
                     </div>
