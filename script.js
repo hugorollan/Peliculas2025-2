@@ -1,5 +1,8 @@
 // MODELO DE DATOS
 
+    // API Key de TMDb
+    const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzOTgxNWVjZTI4ZjcyNWJlZGRmY2Y3OGE0YzRjZGU0ZiIsIm5iZiI6MTc2MDQ1NjUxNS4xNDcsInN1YiI6IjY4ZWU2ZjQzNDYzMzQ0Yjg0MTlkZjQ3MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ejdXz4pm0dZn0OAVJvJ16R8SwNAa-MBkO_yttUiblLk';
+
     let mis_peliculas_iniciales = [
        {titulo: "Superlópez",   director: "Javier Ruiz Caldera", "miniatura": "files/superlopez.png"},
        {titulo: "Jurassic Park", director: "Steven Spielberg", "miniatura": "files/jurassicpark.png"},
@@ -124,6 +127,62 @@
         </div>`;
     }
 
+    const searchView = () => {
+        return `
+        <div class="modal-bg">
+          <div class="modal">
+            <h2>Buscar Película en TMDb</h2>
+            <div class="field">
+                Título de la película <br>
+                <input type="text" id="search-query" placeholder="Ej: Inception">
+            </div>
+            <div class="actions">
+                <button class="search">Buscar</button>
+                <button class="index">Volver</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    const resultsView = (resultados) => {
+        let view = `
+        <div style="width: 100%; padding: 20px;">
+            <h2 style="text-align: center; color: var(--primary);">Resultados de la búsqueda</h2>`;
+        
+        if (!resultados || resultados.length === 0) {
+            view += `<div style='color:#888; margin:20px 0; text-align: center;'>No se encontraron películas</div>`;
+        } else {
+            view += `<div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">`;
+            resultados.forEach(pelicula => {
+                const posterUrl = pelicula.poster_path 
+                    ? `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`
+                    : 'files/placeholder.png';
+                const releaseYear = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
+                
+                view += `
+                <div class="movie">
+                    <div class="movie-img">
+                        <img src="${posterUrl}" onerror="this.src='files/placeholder.png'"/>
+                    </div>
+                    <div class="title">${pelicula.title || "<em>Sin título</em>"}</div>
+                    <p style="font-size: 11px; margin: 5px 0; color: #666;">Año: ${releaseYear}</p>
+                    <div class="actions">
+                        <button class="add-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'>Añadir</button>
+                    </div>
+                </div>`;
+            });
+            view += `</div>`;
+        }
+        
+        view += `
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="index">Volver al inicio</button>
+            </div>
+        </div>`;
+        
+        return view;
+    }
+
     // CONTROLADORES 
 
     const initContr = async () => {
@@ -188,23 +247,94 @@
         }
     }
 
+    const searchViewContr = () => {
+        document.getElementById('main').innerHTML = searchView();
+    }
+
+    const searchContr = async () => {
+        const query = document.getElementById('search-query').value.trim();
+        
+        if (!query) {
+            alert('Por favor, ingresa un término de búsqueda');
+            return;
+        }
+
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${TMDB_API_KEY}`
+            }
+        };
+
+        try {
+            const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=es-ES`, options);
+            const data = await response.json();
+            
+            if (data.results) {
+                document.getElementById('main').innerHTML = resultsView(data.results);
+            } else {
+                alert('No se encontraron resultados');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al buscar películas. Por favor, intenta de nuevo.');
+        }
+    }
+
+    const addFromAPIContr = async (ev) => {
+        const movieData = JSON.parse(ev.target.dataset.movie.replace(/&apos;/g, "'"));
+        
+        const posterUrl = movieData.poster_path 
+            ? `https://image.tmdb.org/t/p/w500${movieData.poster_path}`
+            : 'files/placeholder.png';
+        
+        // Verificar si la película ya existe (por título)
+        const yaExiste = mis_peliculas.some(p => p.titulo === movieData.title);
+        if (yaExiste) {
+            alert('Esta película ya está en tu lista');
+            return;
+        }
+
+        // Extraer el director de los créditos si está disponible, sino usar un valor por defecto
+        const nuevaPelicula = {
+            titulo: movieData.title,
+            director: 'TMDb', // Valor por defecto ya que la API de búsqueda no incluye el director
+            miniatura: posterUrl
+        };
+
+        mis_peliculas.push(nuevaPelicula);
+        await updateAPI(mis_peliculas);
+        
+        alert(`"${movieData.title}" ha sido añadida a tu lista`);
+        indexContr();
+    }
+
     // ROUTER de eventos
     const matchEvent = (ev, sel) => ev.target.matches(sel)
     const myId = (ev) => Number(ev.target.dataset.myId)
 
     document.addEventListener('click', ev => {
-        if      (matchEvent(ev, '.index'))  indexContr  ();
-        else if (matchEvent(ev, '.edit'))   editContr   (myId(ev));
-        else if (matchEvent(ev, '.update')) updateContr (myId(ev));
-        else if (matchEvent(ev, '.show'))   showContr   (myId(ev));
-        else if (matchEvent(ev, '.new'))    newContr    ();
-        else if (matchEvent(ev, '.create')) createContr ();
-        else if (matchEvent(ev, '.delete')) deleteContr (myId(ev));
-        else if (matchEvent(ev, '.reset'))  resetContr  ();
+        if      (matchEvent(ev, '.index'))        indexContr       ();
+        else if (matchEvent(ev, '.edit'))         editContr        (myId(ev));
+        else if (matchEvent(ev, '.update'))       updateContr      (myId(ev));
+        else if (matchEvent(ev, '.show'))         showContr        (myId(ev));
+        else if (matchEvent(ev, '.new'))          newContr         ();
+        else if (matchEvent(ev, '.create'))       createContr      ();
+        else if (matchEvent(ev, '.delete'))       deleteContr      (myId(ev));
+        else if (matchEvent(ev, '.reset'))        resetContr       ();
+        else if (matchEvent(ev, '.search-view'))  searchViewContr  ();
+        else if (matchEvent(ev, '.search'))       searchContr      ();
+        else if (matchEvent(ev, '.add-from-api')) addFromAPIContr  (ev);
+    })
+
+    // Soporte para presionar Enter en el campo de búsqueda
+    document.addEventListener('keypress', ev => {
+        if (ev.key === 'Enter' && ev.target.id === 'search-query') {
+            searchContr();
+        }
     })
     
     
     // Inicialización        
     document.addEventListener('DOMContentLoaded', initContr);
-// Inicialización        
-document.addEventListener('DOMContentLoaded', initContr);
