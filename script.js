@@ -269,6 +269,11 @@
 
         try {
             const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=es-ES`, options);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             if (data.results) {
@@ -283,31 +288,36 @@
     }
 
     const addFromAPIContr = async (ev) => {
-        const movieData = JSON.parse(ev.target.dataset.movie.replace(/&apos;/g, "'"));
-        
-        const posterUrl = movieData.poster_path 
-            ? `https://image.tmdb.org/t/p/w500${movieData.poster_path}`
-            : 'files/placeholder.png';
-        
-        // Verificar si la película ya existe (por título)
-        const yaExiste = mis_peliculas.some(p => p.titulo === movieData.title);
-        if (yaExiste) {
-            alert('Esta película ya está en tu lista');
-            return;
+        try {
+            const movieData = JSON.parse(ev.target.dataset.movie.replace(/&apos;/g, "'"));
+            
+            const posterUrl = movieData.poster_path 
+                ? `https://image.tmdb.org/t/p/w500${movieData.poster_path}`
+                : 'files/placeholder.png';
+            
+            // Verificar si la película ya existe (por título)
+            const yaExiste = mis_peliculas.some(p => p.titulo === movieData.title);
+            if (yaExiste) {
+                alert('Esta película ya está en tu lista');
+                return;
+            }
+
+            // Extraer el director de los créditos si está disponible, sino usar un valor por defecto
+            const nuevaPelicula = {
+                titulo: movieData.title,
+                director: 'TMDb', // Valor por defecto ya que la API de búsqueda no incluye el director
+                miniatura: posterUrl
+            };
+
+            mis_peliculas.push(nuevaPelicula);
+            await updateAPI(mis_peliculas);
+            
+            alert(`"${movieData.title}" ha sido añadida a tu lista`);
+            indexContr();
+        } catch (err) {
+            console.error('Error al añadir película:', err);
+            alert('Error al añadir la película. Por favor, intenta de nuevo.');
         }
-
-        // Extraer el director de los créditos si está disponible, sino usar un valor por defecto
-        const nuevaPelicula = {
-            titulo: movieData.title,
-            director: 'TMDb', // Valor por defecto ya que la API de búsqueda no incluye el director
-            miniatura: posterUrl
-        };
-
-        mis_peliculas.push(nuevaPelicula);
-        await updateAPI(mis_peliculas);
-        
-        alert(`"${movieData.title}" ha sido añadida a tu lista`);
-        indexContr();
     }
 
     // ROUTER de eventos
