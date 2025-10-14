@@ -15,6 +15,10 @@ Una aplicación web moderna y elegante para gestionar tu colección personal de 
 - 🎨 **Diseño Moderno**: Interfaz inspirada en TMDb con animaciones y transiciones fluidas
 - 📱 **Responsive**: Diseño adaptable a dispositivos móviles, tablets y escritorio
 - ⭐ **Información Detallada**: Visualiza puntuaciones, géneros, reparto y sinopsis de películas
+- 🎬 **Visualización de Trailers**: Trailers de YouTube embebidos directamente en la aplicación
+- ⏱️ **Duración de Películas**: Muestra la duración en formato horas y minutos
+- 📝 **Reseñas de Usuarios**: Lee opiniones de otros usuarios desde TMDb
+- 💰 **Datos Financieros**: Presupuesto y recaudación de taquilla de cada película
 - 🖼️ **Imágenes de Calidad**: Posters de alta resolución desde TMDb con fallback a placeholders
 - ♿ **Accesible**: Código semántico y buenas prácticas de accesibilidad
 
@@ -114,6 +118,11 @@ La integración con TMDb API permite:
 - Resultados en español (idioma configurable)
 - Detección automática de duplicados
 - Información completa: título, año, puntuación, póster, géneros, sinopsis y reparto
+- **Trailers embebidos de YouTube**
+- **Duración de la película**
+- **Reseñas de usuarios con calificaciones**
+- **Presupuesto y recaudación de taquilla**
+- **Tagline/eslogan de la película**
 
 ### Persistencia de Datos
 
@@ -195,15 +204,25 @@ const TMDB_API_KEY = 'tu_token_aqui';
    Parámetros: query, language=es-ES
    ```
 
-2. **Detalles de Película** (para información extendida)
+2. **Detalles Extendidos de Película**
    ```
    GET https://api.themoviedb.org/3/movie/{id}
-   Parámetros: language=es-ES, append_to_response=credits
+   Parámetros: language=es-ES, append_to_response=credits,videos,reviews
    ```
+   
+   Este endpoint proporciona:
+   - `runtime`: Duración de la película
+   - `budget`: Presupuesto
+   - `revenue`: Recaudación
+   - `tagline`: Eslogan/tagline
+   - `credits`: Director y reparto
+   - `videos`: Trailers y videos
+   - `reviews`: Reseñas de usuarios
 
 3. **Imágenes**
    ```
    https://image.tmdb.org/t/p/w500/{poster_path}
+   https://image.tmdb.org/t/p/w185/{profile_path}
    ```
 
 ### Manejo de Errores
@@ -281,6 +300,7 @@ Este proyecto es de código abierto y está disponible bajo la [Licencia MIT](LI
 
 - [IMPLEMENTATION.md](IMPLEMENTATION.md) - Documentación técnica detallada de la implementación
 - [SUMMARY.md](SUMMARY.md) - Resumen ejecutivo del proyecto
+- [NUEVAS_FUNCIONALIDADES.md](NUEVAS_FUNCIONALIDADES.md) - Detalles de las nuevas funcionalidades TMDb
 - [TEST_VERIFICATION.html](TEST_VERIFICATION.html) - Página de verificación de funcionalidades
 
 ## 🙏 Agradecimientos
