@@ -11,19 +11,37 @@
             --tmdb-light-blue: #01b4e4;
             --tmdb-light-green: #90cea1;
             --tmdb-yellow: #ffc107;
-            --tmdb-bg: #0d253f;
+            --tmdb-bg: #f7fafd;
+            --tmdb-bg-gradient: linear-gradient(to bottom, #f7fafd 0%, #e3eaf3 100%);
             --tmdb-card-bg: #ffffff;
-            --tmdb-text: #000000;
+            --tmdb-text: #222;
             --tmdb-text-light: #666666;
             --tmdb-hover: #01b4e4;
+        }
+        body.dark {
+            --tmdb-dark-blue: #181818;
+            --tmdb-light-blue: #20b38e;
+            --tmdb-bg: #10151c;
+            --tmdb-bg-gradient: linear-gradient(to bottom, #10151c 0%, #23272b 100%);
+            --tmdb-card-bg: #23272b;
+            --tmdb-text: #e0e0e0;
+            --tmdb-text-light: #bdbdbd;
+        }
+        body.dark {
+            --tmdb-dark-blue: #181818;
+            --tmdb-light-blue: #20b38e;
+            --tmdb-card-bg: #23272b;
+            --tmdb-text: #e0e0e0;
+            --tmdb-text-light: #bdbdbd;
         }
         
         body { 
             margin: 0;
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(to bottom, #0d253f 0%, #1a4d6d 100%);
+            background: var(--tmdb-bg-gradient);
             min-height: 100vh;
             color: var(--tmdb-text);
+            transition: background 0.4s, color 0.4s;
         }
         
         * {
@@ -34,7 +52,7 @@
         /* Header Styling */
         h1 {
             background: var(--tmdb-dark-blue);
-            color: white;
+            color: #ffc107;
             font-weight: 700;
             font-size: 28px;
             margin: 0;
@@ -42,6 +60,7 @@
             text-transform: uppercase;
             letter-spacing: 1.5px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: color 0.4s;
         }
         
         h2 { 
@@ -280,6 +299,7 @@
 </head>
 <body>
     <h1>🎬 Películas Favoritas de Hugo Rollán</h1>
+    <button id="toggle-theme" style="position:absolute;top:24px;right:24px;padding:8px 16px;border-radius:20px;border:none;background:#222;color:#ffd700;cursor:pointer;font-weight:bold;z-index:999;">🌙 Modo oscuro</button>
     <nav style="background:#f5f5f5; padding:10px; margin-bottom:10px;">
         <button class="index">Inicio</button>
         <button class="new">Añadir película</button>
@@ -290,6 +310,24 @@
     <footer style="width:100%;text-align:center;padding:18px 0 12px 0;color:#fff;background:var(--tmdb-dark-blue);font-size:14px;position:fixed;bottom:0;left:0;">
         &copy; 2025 Hugo Rollán. Todos los derechos reservados.
     </footer>
+    <script>
+    // Dark/Light mode toggle
+    const themeBtn = document.getElementById('toggle-theme');
+    function setTheme(dark) {
+        if (dark) {
+            document.body.classList.add('dark');
+            themeBtn.textContent = '☀️ Modo claro';
+        } else {
+            document.body.classList.remove('dark');
+            themeBtn.textContent = '🌙 Modo oscuro';
+        }
+    }
+    themeBtn.addEventListener('click', () => {
+        setTheme(!document.body.classList.contains('dark'));
+    });
+    // Inicializar según preferencia del sistema
+    setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

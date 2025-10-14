@@ -1,3 +1,54 @@
+/* Modo oscuro */
+.dark {
+    background-color: #181818;
+    color: #e0e0e0;
+}
+
+.dark header {
+    background-color: #111;
+    color: #ffd700;
+}
+
+.dark main {
+    background: #222;
+    color: #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.32);
+}
+
+.dark .movie-card {
+    background: #23272b;
+    color: #e0e0e0;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.18);
+}
+
+.dark .movie-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.32);
+}
+
+.dark .modal {
+    background: #23272b;
+    color: #ffd700;
+}
+
+.dark .modal-bg {
+    background: rgba(0,0,0,0.8);
+}
+
+.dark button, .dark .actions button {
+    background: #ffd700;
+    color: #222;
+}
+
+.dark button:hover, .dark .actions button:hover {
+    background: #90cea1;
+    color: #fff;
+}
+
+.dark footer {
+    background: #111;
+    color: #ffd700;
+    border-top: 1px solid #333;
+}
 /* Estilos generales para index.html */
 
 body {
