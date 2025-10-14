@@ -115,8 +115,8 @@
         let castSection = '';
         if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
             const castList = pelicula.cast.slice(0, 8).map(actor => 
-                `<div style="display:inline-block; margin:4px 8px 4px 0; padding:6px 12px; background:#f0f0f0; border-radius:20px; font-size:13px; color:#333;">
-                    ${actor.name}${actor.character ? ` <span style="color:#666;">(${actor.character})</span>` : ''}
+                `<div class="cast-badge">
+                    ${actor.name}${actor.character ? ` <span class="cast-character">(${actor.character})</span>` : ''}
                 </div>`
             ).join('');
             castSection = `
@@ -380,16 +380,16 @@
                             director = directorObj.name;
                         }
                     }
-                    // Obtener el reparto (cast)
+                    // Obtener el reparto (cast) - máximo 8 actores
                     if (creditsData.cast && Array.isArray(creditsData.cast)) {
-                        cast = creditsData.cast.slice(0, 10).map(actor => ({
+                        cast = creditsData.cast.slice(0, 8).map(actor => ({
                             name: actor.name,
                             character: actor.character
                         }));
                     }
                 }
             } catch (err) {
-                console.warn('No se pudo obtener el director o reparto:', err);
+                console.warn(`No se pudo obtener créditos para "${movieData.title}":`, err);
             }
 
             // Mapeo de IDs de géneros a nombres en español (TMDb)
