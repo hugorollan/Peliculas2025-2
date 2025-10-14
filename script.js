@@ -89,17 +89,18 @@
     }
 
     const showView = (pelicula) => {
-                        return `
-                        <div class="modal-bg">
-                            <div class="modal">
-                                <h2 style="margin-bottom:15px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
-                                <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
-                                <p><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
-                                <div class="actions">
-                                    <button class="index">Volver</button>
-                                </div>
-                            </div>
-                        </div>`;
+        return `
+        <div class="modal-bg">
+            <div class="modal">
+                <h2 style="margin-bottom:15px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
+                <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
+                <p><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                ${pelicula.resumen ? `<p style='margin:10px 0; color:#444; font-size:13px;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
+                <div class="actions">
+                    <button class="index">Volver</button>
+                </div>
+            </div>
+        </div>`;
     }
 
     const newView = () => {
@@ -328,7 +329,8 @@
             const nuevaPelicula = {
                 titulo: movieData.title,
                 director: director,
-                miniatura: posterUrl
+                miniatura: posterUrl,
+                resumen: movieData.overview || ''
             };
 
             mis_peliculas.push(nuevaPelicula);
