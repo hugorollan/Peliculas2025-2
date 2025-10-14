@@ -2,100 +2,284 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Mis Películas</title>
+    <title>MovieHub - Tu Colección de Películas</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
     <style>
-        .modal-bg {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* TMDb-inspired Color Palette */
+        :root {
+            --tmdb-dark-blue: #032541;
+            --tmdb-light-blue: #01b4e4;
+            --tmdb-light-green: #90cea1;
+            --tmdb-yellow: #ffc107;
+            --tmdb-bg: #0d253f;
+            --tmdb-card-bg: #ffffff;
+            --tmdb-text: #000000;
+            --tmdb-text-light: #666666;
+            --tmdb-hover: #01b4e4;
         }
-        .modal {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 24px #0002;
-            padding: 30px 20px 20px 20px;
-            min-width: 300px;
-            max-width: 90vw;
-            z-index: 1001;
-            text-align: center;
+        
+        body { 
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to bottom, #0d253f 0%, #1a4d6d 100%);
+            min-height: 100vh;
+            color: var(--tmdb-text);
         }
-        body { --primary: #6200ee; --secondary: #29b6f6; margin: 0px;}
-        * {font-family: 'Roboto', sans-serif;}
+        
+        * {
+            font-family: 'Roboto', sans-serif;
+            box-sizing: border-box;
+        }
+        
+        /* Header Styling */
+        h1 {
+            background: var(--tmdb-dark-blue);
+            color: white;
+            font-weight: 700;
+            font-size: 28px;
+            margin: 0;
+            padding: 24px 40px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        h2 { 
+            margin-block-start: 0;
+            margin-block-end: 20px;
+            font-size: 24px;
+            color: var(--tmdb-dark-blue);
+            font-weight: 600;
+        }
+        
+        /* Navigation Bar */
+        nav {
+            background: rgba(3, 37, 65, 0.95) !important;
+            padding: 16px 40px !important;
+            margin-bottom: 0 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        /* Button Styling */
         button { 
             -webkit-font-smoothing: antialiased;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            margin: 2px;
-            color: var(--primary);
-            background: white;
-            border: 1px solid var(--primary);
-            height: 22px;
-            min-width: 60px;
-            font-size: 10px;
+            margin: 0;
+            color: white;
+            background: var(--tmdb-light-blue);
+            border: none;
+            height: 38px;
+            min-width: 120px;
+            font-size: 13px;
+            font-weight: 600;
             text-transform: uppercase;
             cursor: pointer;
-            transition: ease-in 0.2s all;
-            padding: 0 8px;
+            transition: all 0.3s ease;
+            padding: 0 20px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
         }
-        div#main {padding: 10px;}
+        
+        button:hover { 
+            background: #0195bc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(1, 180, 228, 0.4);
+        }
+        
+        /* Main Content Area */
         div#main {
+            padding: 40px 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 24px;
             justify-content: center;
             align-items: flex-start;
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        input {margin-bottom: 5px; margin-top: 2px; padding: 4px; font-size: 12px; }
-        h1 {background: var(--primary); color: white; font-weight: 300; text-transform: uppercase; font-size: 20px; margin: 0px; padding: 15px;}
-        h2 { margin-block-start: 0px; margin-block-end: 10px; font-size: 20px;  color: var(--primary);}
-        button:hover { background: var(--primary); color: white; }
-        div.actions { margin-top: 10px;}
+        
+        /* Movie Card Styling */
         div.movie {
             display: flex;
             flex-direction: column;
-            align-items: center;
             width: 200px;
-            padding: 10px;
-            box-shadow: 2px 2px 7px #ccc;
+            background: var(--tmdb-card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
             margin: 0;
-            background: white;
         }
-    div.movie div.movie-img {width: 200px; height: auto; min-height: 200px; cursor: pointer;}
-    div.movie div.movie-img img {width: 100%; height: auto;}
+        
+        div.movie:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        }
+        
+        div.movie div.movie-img {
+            width: 200px;
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
         div.movie div.movie-img img {
             width: 100%;
-            height: 300px;
+            height: 100%;
             object-fit: cover;
             aspect-ratio: 2/3;
-            background: #eee;
+            background: #e0e0e0;
+            transition: transform 0.3s ease;
         }
-        /* Imágenes verticales en el modal */
+        
+        div.movie:hover div.movie-img img {
+            transform: scale(1.05);
+        }
+        
+        div.movie div.title {
+            text-align: center;
+            padding: 12px 10px 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--tmdb-text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+        
+        div.movie div.actions {
+            text-align: center;
+            padding: 0 10px 12px;
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        div.movie div.actions button {
+            font-size: 10px;
+            min-width: 50px;
+            height: 28px;
+            padding: 0 12px;
+            background: var(--tmdb-light-blue);
+        }
+        
+        div.movie div.actions button:hover {
+            background: #0195bc;
+        }
+        
+        /* Modal Styling */
+        .modal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(3, 37, 65, 0.85);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding: 40px 30px 30px;
+            min-width: 400px;
+            max-width: 90vw;
+            z-index: 1001;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .modal img {
-            width: 200px;
-            height: 300px;
+            width: 240px;
+            height: 360px;
             object-fit: cover;
             aspect-ratio: 2/3;
-            background: #eee;
+            background: #e0e0e0;
             display: block;
-            margin: 0 auto 15px auto;
+            margin: 0 auto 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-    div.movie div.title {text-align: center; overflow: hidden; text-overflow: ellipsis; width: 200px; white-space: nowrap; }
-    div.movie div.actions {text-align: center;}
-    div.field {color: var(--primary); text-transform: uppercase; font-size: 12px;}
+        
+        .modal p {
+            font-size: 15px;
+            color: var(--tmdb-text-light);
+            margin: 12px 0;
+        }
+        
+        /* Form Field Styling */
+        div.field {
+            color: var(--tmdb-dark-blue);
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+        
+        input {
+            margin-top: 8px;
+            padding: 12px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            width: 100%;
+            transition: border-color 0.3s ease;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--tmdb-light-blue);
+        }
+        
+        div.actions { 
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
-    <h1>Mis Películas Favoritas</h1>
+    <h1>🎬 MovieHub</h1>
     <nav style="background:#f5f5f5; padding:10px; margin-bottom:10px;">
         <button class="index">Inicio</button>
         <button class="new">Añadir película</button>
