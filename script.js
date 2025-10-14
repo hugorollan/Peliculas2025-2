@@ -111,6 +111,55 @@
             `;
         }
 
+        // Mostrar tagline si está disponible
+        let taglineSection = '';
+        if (pelicula.tagline) {
+            taglineSection = `<p style="font-style:italic; color:#666; font-size:15px; margin-bottom:16px; text-align:left;">"${pelicula.tagline}"</p>`;
+        }
+
+        // Mostrar duración si está disponible
+        let runtimeSection = '';
+        if (pelicula.runtime) {
+            const hours = Math.floor(pelicula.runtime / 60);
+            const minutes = pelicula.runtime % 60;
+            runtimeSection = `<p style="text-align:left;"><strong>Duración:</strong> ${hours}h ${minutes}min (${pelicula.runtime} minutos)</p>`;
+        }
+
+        // Mostrar presupuesto y recaudación si están disponibles
+        let budgetRevenueSection = '';
+        if (pelicula.budget || pelicula.revenue) {
+            budgetRevenueSection = '<div style="margin-top:12px;">';
+            if (pelicula.budget && pelicula.budget > 0) {
+                const budgetFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.budget);
+                budgetRevenueSection += `<p style="text-align:left;"><strong>Presupuesto:</strong> ${budgetFormatted}</p>`;
+            }
+            if (pelicula.revenue && pelicula.revenue > 0) {
+                const revenueFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.revenue);
+                budgetRevenueSection += `<p style="text-align:left;"><strong>Recaudación:</strong> ${revenueFormatted}</p>`;
+            }
+            budgetRevenueSection += '</div>';
+        }
+
+        // Mostrar trailer si está disponible
+        let trailerSection = '';
+        if (pelicula.trailerKey) {
+            trailerSection = `
+                <div style="margin-top:20px;">
+                    <p style="font-weight:600; margin-bottom:12px; text-align:left;"><strong>🎬 Trailer:</strong></p>
+                    <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                        <iframe 
+                            style="position:absolute; top:0; left:0; width:100%; height:100%;" 
+                            src="https://www.youtube.com/embed/${pelicula.trailerKey}" 
+                            title="YouTube video player" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            `;
+        }
+
         // Mostrar reparto si está disponible
         let castSection = '';
         if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
@@ -134,6 +183,32 @@
             `;
         }
 
+        // Mostrar reseñas si están disponibles
+        let reviewsSection = '';
+        if (pelicula.reviews && Array.isArray(pelicula.reviews) && pelicula.reviews.length > 0) {
+            const reviewsList = pelicula.reviews.map(review => {
+                const ratingBadge = review.rating ? `<span style="background:#20b38e; color:white; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600;">⭐ ${review.rating}/10</span>` : '';
+                const date = review.created_at ? new Date(review.created_at).toLocaleDateString('es-ES') : '';
+                const truncatedContent = review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content;
+                return `
+                    <div style="background:#f9f9f9; padding:16px; border-radius:8px; margin-bottom:12px; border-left:4px solid #01b4e4;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <strong style="color:#032541;">${review.author}</strong>
+                            ${ratingBadge}
+                        </div>
+                        ${date ? `<div style="font-size:12px; color:#888; margin-bottom:8px;">${date}</div>` : ''}
+                        <p style="color:#444; font-size:13px; line-height:1.6; margin:0;">${truncatedContent}</p>
+                    </div>
+                `;
+            }).join('');
+            reviewsSection = `
+                <div style="margin-top:20px;">
+                    <p style="font-weight:600; margin-bottom:12px; text-align:left;"><strong>📝 Reseñas de usuarios:</strong></p>
+                    ${reviewsList}
+                </div>
+            `;
+        }
+
         return `
         <div class="modal-bg">
             <div class="modal modal-horizontal">
@@ -142,12 +217,17 @@
                 </div>
                 <div class="modal-info">
                     <h2 style="margin-top:0; margin-bottom:16px; text-align:left;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
+                    ${taglineSection}
                     <p style="text-align:left;"><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
                     <p style="text-align:left;"><strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
+                    ${runtimeSection}
                     ${ratingCircle}
                     ${pelicula.generos && pelicula.generos.length > 0 ? `<p style="text-align:left;"><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
+                    ${budgetRevenueSection}
                     ${pelicula.resumen ? `<p style='margin:12px 0; color:#444; font-size:14px; text-align:left; line-height:1.6;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
+                    ${trailerSection}
                     ${castSection}
+                    ${reviewsSection}
                     <div class="actions" style="justify-content:flex-start; margin-top:20px;">
                         <button class="index">Volver</button>
                     </div>
@@ -365,9 +445,16 @@
                 return;
             }
 
-            // Obtener el director y reparto usando el endpoint de créditos de TMDb
+            // Obtener información extendida de la película (runtime, videos, reviews)
             let director = 'Desconocido';
             let cast = [];
+            let runtime = null;
+            let trailerKey = null;
+            let reviews = [];
+            let budget = null;
+            let revenue = null;
+            let tagline = null;
+
             try {
                 const options = {
                     method: 'GET',
@@ -376,26 +463,70 @@
                         Authorization: `Bearer ${TMDB_API_KEY}`
                     }
                 };
-                const creditsRes = await fetch(`https://api.themoviedb.org/3/movie/${movieData.id}/credits?language=es-ES`, options);
-                if (creditsRes.ok) {
-                    const creditsData = await creditsRes.json();
-                    if (creditsData.crew && Array.isArray(creditsData.crew)) {
-                        const directorObj = creditsData.crew.find(persona => persona.job === 'Director');
-                        if (directorObj) {
-                            director = directorObj.name;
+
+                // Obtener detalles completos de la película
+                const detailsRes = await fetch(`https://api.themoviedb.org/3/movie/${movieData.id}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+                if (detailsRes.ok) {
+                    const detailsData = await detailsRes.json();
+                    
+                    // Runtime (duración)
+                    if (detailsData.runtime) {
+                        runtime = detailsData.runtime;
+                    }
+
+                    // Budget y Revenue
+                    if (detailsData.budget) {
+                        budget = detailsData.budget;
+                    }
+                    if (detailsData.revenue) {
+                        revenue = detailsData.revenue;
+                    }
+
+                    // Tagline
+                    if (detailsData.tagline) {
+                        tagline = detailsData.tagline;
+                    }
+
+                    // Credits (director y reparto)
+                    if (detailsData.credits) {
+                        if (detailsData.credits.crew && Array.isArray(detailsData.credits.crew)) {
+                            const directorObj = detailsData.credits.crew.find(persona => persona.job === 'Director');
+                            if (directorObj) {
+                                director = directorObj.name;
+                            }
+                        }
+                        // Obtener el reparto (cast) - máximo 8 actores
+                        if (detailsData.credits.cast && Array.isArray(detailsData.credits.cast)) {
+                            cast = detailsData.credits.cast.slice(0, 8).map(actor => ({
+                                name: actor.name,
+                                character: actor.character,
+                                profile_path: actor.profile_path
+                            }));
                         }
                     }
-                    // Obtener el reparto (cast) - máximo 8 actores
-                    if (creditsData.cast && Array.isArray(creditsData.cast)) {
-                        cast = creditsData.cast.slice(0, 8).map(actor => ({
-                            name: actor.name,
-                            character: actor.character,
-                            profile_path: actor.profile_path
+
+                    // Videos (trailers)
+                    if (detailsData.videos && detailsData.videos.results) {
+                        const trailer = detailsData.videos.results.find(v => 
+                            v.type === 'Trailer' && v.site === 'YouTube'
+                        );
+                        if (trailer) {
+                            trailerKey = trailer.key;
+                        }
+                    }
+
+                    // Reviews (reseñas)
+                    if (detailsData.reviews && detailsData.reviews.results) {
+                        reviews = detailsData.reviews.results.slice(0, 3).map(review => ({
+                            author: review.author,
+                            content: review.content,
+                            rating: review.author_details?.rating || null,
+                            created_at: review.created_at
                         }));
                     }
                 }
             } catch (err) {
-                console.warn(`No se pudo obtener créditos para "${movieData.title}":`, err);
+                console.warn(`No se pudo obtener información extendida para "${movieData.title}":`, err);
             }
 
             // Mapeo de IDs de géneros a nombres en español (TMDb)
@@ -437,7 +568,13 @@
                 resumen: movieData.overview || '',
                 rating: rating,
                 generos: generos,
-                cast: cast
+                cast: cast,
+                runtime: runtime,
+                trailerKey: trailerKey,
+                reviews: reviews,
+                budget: budget,
+                revenue: revenue,
+                tagline: tagline
             };
 
             mis_peliculas.push(nuevaPelicula);
