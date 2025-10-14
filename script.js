@@ -91,6 +91,25 @@
     }
 
     const showView = (pelicula) => {
+        // Círculo de puntuación SVG
+        let ratingCircle = '';
+        if (typeof pelicula.rating === 'number' && !isNaN(pelicula.rating)) {
+            const percent = Math.max(0, Math.min(100, Math.round(pelicula.rating * 10)));
+            const radius = 22;
+            const stroke = 6;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference * (1 - percent / 100);
+            ratingCircle = `
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                    <svg width="50" height="50" style="display:block;">
+                        <circle cx="25" cy="25" r="${radius}" stroke="#eee" stroke-width="${stroke}" fill="none" />
+                        <circle cx="25" cy="25" r="${radius}" stroke="#20b38e" stroke-width="${stroke}" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s;" />
+                        <text x="25" y="30" text-anchor="middle" font-size="13" fill="#222" font-weight="bold">${percent}%</text>
+                    </svg>
+                    <span style="font-size:1rem; color:#20b38e; font-weight:bold;">Puntuación usuarios</span>
+                </div>
+            `;
+        }
         return `
         <div class="modal-bg">
             <div class="modal">
@@ -98,7 +117,7 @@
                 <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
                 <p><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
                 <p><strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
-                ${pelicula.rating ? `<p><strong>Calificación:</strong> ${pelicula.rating} / 10</p>` : ''}
+                ${ratingCircle}
                 ${pelicula.generos && pelicula.generos.length > 0 ? `<p><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
                 ${pelicula.resumen ? `<p style='margin:10px 0; color:#444; font-size:13px;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
                 <div class="actions">
