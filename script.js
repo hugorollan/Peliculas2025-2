@@ -340,7 +340,7 @@
 
     const resultsView = (resultados) => {
         let view = `
-        <div style="width: 100%; padding: 20px;">
+        <div style="width: 100%; padding: 20px; margin-bottom: 80px;">
             <h2 style="text-align: center; color: var(--tmdb-dark-blue); font-size: 32px; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-film"></i> Resultados de la búsqueda</h2>`;
         
         if (!resultados || resultados.length === 0) {
@@ -385,7 +385,7 @@
                         ${genreBadge}
                     </div>
                     <div class="actions">
-                        <button class="add-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir</button>
+                        <button class="add-from-api" style="z-index:1; position:relative;" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir</button>
                     </div>
                 </div>`;
             });
