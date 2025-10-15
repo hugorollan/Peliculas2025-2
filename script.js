@@ -413,7 +413,9 @@
     const resultsView = (resultados) => {
         let view = `
         <div style="width: 100%; padding: 20px; margin-bottom: 80px;">
-            <h2 style="text-align: center; color: var(--tmdb-dark-blue); font-size: 32px; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-film"></i> Resultados de la búsqueda</h2>`;
+            <h2 style="text-align: center; color: var(--tmdb-dark-blue); font-size: 32px; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <i class="fas fa-film"></i> Resultados de la búsqueda: "${lastSearchQuery}"
+            </h2>`;
         
         if (!resultados || resultados.length === 0) {
             view += `<div style='color: #666; margin:40px 0; text-align: center; font-size: 18px;'>
