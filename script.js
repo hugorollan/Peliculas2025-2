@@ -385,6 +385,7 @@
                         ${genreBadge}
                     </div>
                     <div class="actions">
+                        <button class="preview-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'><i class="fas fa-eye"></i> Consultar</button>
                         <button class="add-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir</button>
                     </div>
                 </div>`;
@@ -514,6 +515,200 @@
             console.error(err);
             alert('Error al buscar películas. Por favor, intenta de nuevo.');
             searchViewContr();
+        }
+    }
+
+    const previewFromAPIContr = async (ev) => {
+        try {
+            const movieData = JSON.parse(ev.target.dataset.movie.replace(/&apos;/g, "'"));
+            
+            // Mostrar estado de carga
+            document.getElementById('main').innerHTML = `
+                <div style="text-align:center; padding:100px 20px;">
+                    <div class="loading"></div>
+                    <p style="margin-top:24px; font-size:18px; color:#666;"><i class="fas fa-film"></i> Cargando detalles de la película...</p>
+                </div>
+            `;
+
+            const posterUrl = movieData.poster_path 
+                ? `https://image.tmdb.org/t/p/w500${movieData.poster_path}`
+                : 'files/placeholder.png';
+
+            // Obtener información extendida de la película (runtime, videos, reviews)
+            let director = 'Desconocido';
+            let cast = [];
+            let runtime = null;
+            let trailerKey = null;
+            let reviews = [];
+            let budget = null;
+            let revenue = null;
+            let tagline = null;
+            let popularity = movieData.popularity || null;
+            let original_language = movieData.original_language || null;
+            let vote_count = movieData.vote_count || null;
+
+            try {
+                const options = {
+                    method: 'GET',
+                    headers: {
+                        accept: 'application/json',
+                        Authorization: `Bearer ${TMDB_API_KEY}`
+                    }
+                };
+
+                // Obtener detalles completos de la película
+                const detailsRes = await fetch(`https://api.themoviedb.org/3/movie/${movieData.id}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+                if (detailsRes.ok) {
+                    const detailsData = await detailsRes.json();
+                    
+                    // Runtime (duración)
+                    if (detailsData.runtime) {
+                        runtime = detailsData.runtime;
+                    }
+
+                    // Budget y Revenue
+                    if (detailsData.budget) {
+                        budget = detailsData.budget;
+                    }
+                    if (detailsData.revenue) {
+                        revenue = detailsData.revenue;
+                    }
+
+                    // Tagline
+                    if (detailsData.tagline) {
+                        tagline = detailsData.tagline;
+                    }
+
+                    // Credits (director y reparto)
+                    if (detailsData.credits) {
+                        if (detailsData.credits.crew && Array.isArray(detailsData.credits.crew)) {
+                            const directorObj = detailsData.credits.crew.find(persona => persona.job === 'Director');
+                            if (directorObj) {
+                                director = directorObj.name;
+                            }
+                        }
+                        // Obtener el reparto (cast) - máximo 8 actores
+                        if (detailsData.credits.cast && Array.isArray(detailsData.credits.cast)) {
+                            cast = detailsData.credits.cast.slice(0, 8).map(actor => ({
+                                name: actor.name,
+                                character: actor.character,
+                                profile_path: actor.profile_path
+                            }));
+                        }
+                    }
+
+                    // Videos (trailers)
+                    if (detailsData.videos && detailsData.videos.results) {
+                        // Buscar trailer en español primero
+                        let trailer = detailsData.videos.results.find(v => 
+                            v.type === 'Trailer' && v.site === 'YouTube' && (v.iso_639_1 === 'es' || v.iso_639_1 === 'en')
+                        );
+                        
+                        // Si no hay trailer en español o inglés, buscar cualquier trailer de YouTube
+                        if (!trailer) {
+                            trailer = detailsData.videos.results.find(v => 
+                                v.type === 'Trailer' && v.site === 'YouTube'
+                            );
+                        }
+                        
+                        // Si aún no hay trailer, buscar un Teaser
+                        if (!trailer) {
+                            trailer = detailsData.videos.results.find(v => 
+                                v.type === 'Teaser' && v.site === 'YouTube'
+                            );
+                        }
+                        
+                        // Si hay algún video, usar el primero disponible
+                        if (!trailer && detailsData.videos.results.length > 0) {
+                            trailer = detailsData.videos.results.find(v => v.site === 'YouTube');
+                        }
+                        
+                        if (trailer) {
+                            trailerKey = trailer.key;
+                        }
+                    }
+
+                    // Reviews (reseñas)
+                    if (detailsData.reviews && detailsData.reviews.results) {
+                        reviews = detailsData.reviews.results.slice(0, 3).map(review => ({
+                            author: review.author,
+                            content: review.content,
+                            rating: review.author_details?.rating || null,
+                            created_at: review.created_at
+                        }));
+                    }
+                }
+            } catch (err) {
+                console.warn(`No se pudo obtener información extendida para "${movieData.title}":`, err);
+            }
+
+            // Mapeo de IDs de géneros a nombres en español (TMDb)
+            const GENRE_MAP = {
+                28: 'Acción',
+                12: 'Aventura',
+                16: 'Animación',
+                35: 'Comedia',
+                80: 'Crimen',
+                99: 'Documental',
+                18: 'Drama',
+                10751: 'Familiar',
+                14: 'Fantasía',
+                36: 'Historia',
+                27: 'Terror',
+                10402: 'Música',
+                9648: 'Misterio',
+                10749: 'Romance',
+                878: 'Ciencia ficción',
+                10770: 'Película de TV',
+                53: 'Suspense',
+                10752: 'Bélica',
+                37: 'Western'
+            };
+
+            let generos = [];
+            if (Array.isArray(movieData.genre_ids) && movieData.genre_ids.length > 0) {
+                generos = movieData.genre_ids.map(id => GENRE_MAP[id] || id);
+            } else if (movieData.genres) {
+                generos = movieData.genres.map(g => g.name);
+            }
+            const rating = typeof movieData.vote_average === 'number' ? movieData.vote_average : '';
+
+            // Crear objeto temporal de película para mostrar
+            const peliculaPreview = {
+                titulo: movieData.title,
+                director: director,
+                año: movieData.release_date ? movieData.release_date.split('-')[0] : '',
+                miniatura: posterUrl,
+                resumen: movieData.overview || '',
+                rating: rating,
+                generos: generos,
+                cast: cast,
+                runtime: runtime,
+                trailerKey: trailerKey,
+                reviews: reviews,
+                budget: budget,
+                revenue: revenue,
+                tagline: tagline,
+                popularity: popularity,
+                original_language: original_language,
+                vote_count: vote_count
+            };
+
+            // Mostrar la vista de detalles con botones adicionales
+            const previewView = showView(peliculaPreview);
+            
+            // Añadir botones de acción en la parte inferior (Añadir y Volver)
+            const modifiedView = previewView.replace(
+                '<button class="index"><i class="fas fa-arrow-left"></i> Volver</button>',
+                `<button class="add-from-api-preview" data-movie='${JSON.stringify(movieData).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir a mi colección</button>
+                <button class="search-view"><i class="fas fa-search"></i> Volver a búsqueda</button>
+                <button class="index"><i class="fas fa-arrow-left"></i> Ir al inicio</button>`
+            );
+            
+            document.getElementById('main').innerHTML = modifiedView;
+        } catch (err) {
+            console.error('Error al previsualizar película:', err);
+            alert('Error al cargar los detalles de la película. Por favor, intenta de nuevo.');
         }
     }
 
@@ -706,17 +901,19 @@
     const myId = (ev) => Number(ev.target.dataset.myId)
 
     document.addEventListener('click', ev => {
-        if      (matchEvent(ev, '.index'))        indexContr       ();
-        else if (matchEvent(ev, '.edit'))         editContr        (myId(ev));
-        else if (matchEvent(ev, '.update'))       updateContr      (myId(ev));
-        else if (matchEvent(ev, '.show'))         showContr        (myId(ev));
-        else if (matchEvent(ev, '.new'))          newContr         ();
-        else if (matchEvent(ev, '.create'))       createContr      ();
-        else if (matchEvent(ev, '.delete'))       deleteContr      (myId(ev));
-        else if (matchEvent(ev, '.reset'))        resetContr       ();
-        else if (matchEvent(ev, '.search-view'))  searchViewContr  ();
-        else if (matchEvent(ev, '.search'))       searchContr      ();
-        else if (matchEvent(ev, '.add-from-api')) addFromAPIContr  (ev);
+        if      (matchEvent(ev, '.index'))              indexContr           ();
+        else if (matchEvent(ev, '.edit'))               editContr            (myId(ev));
+        else if (matchEvent(ev, '.update'))             updateContr          (myId(ev));
+        else if (matchEvent(ev, '.show'))               showContr            (myId(ev));
+        else if (matchEvent(ev, '.new'))                newContr             ();
+        else if (matchEvent(ev, '.create'))             createContr          ();
+        else if (matchEvent(ev, '.delete'))             deleteContr          (myId(ev));
+        else if (matchEvent(ev, '.reset'))              resetContr           ();
+        else if (matchEvent(ev, '.search-view'))        searchViewContr      ();
+        else if (matchEvent(ev, '.search'))             searchContr          ();
+        else if (matchEvent(ev, '.preview-from-api'))   previewFromAPIContr  (ev);
+        else if (matchEvent(ev, '.add-from-api-preview')) addFromAPIContr   (ev);
+        else if (matchEvent(ev, '.add-from-api'))       addFromAPIContr      (ev);
     })
 
     // Soporte para presionar Enter en el campo de búsqueda
