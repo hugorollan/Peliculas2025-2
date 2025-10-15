@@ -1,15 +1,5 @@
 /* Modo oscuro */
-.dark {
-    background-color: #181818;
-    color: #e0e0e0;
-}
 
-.dark header {
-    background-color: #111;
-    color: #ffd700;
-}
-
-.dark main {
     background: #222;
     color: #e0e0e0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.32);
@@ -103,12 +93,6 @@ h2 {
     margin-top: 0;
 }
 
-.movie-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
-    margin: 32px 0;
-}
 
 .movie-card {
     background: #fafafa;
@@ -129,13 +113,7 @@ h2 {
     }
 }
 
-.movie-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    transform: translateY(-4px) scale(1.03);
-}
-/* Animación para modales */
-.modal-bg {
-    position: fixed;
+
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5);
     display: flex;

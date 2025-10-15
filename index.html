@@ -132,6 +132,10 @@
             position: relative;
             overflow: hidden;
             cursor: pointer;
+            background: #e0e0e0; /* Fondo gris claro para uniformidad */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         div.movie div.movie-img img {
@@ -139,8 +143,10 @@
             height: 100%;
             object-fit: cover;
             aspect-ratio: 2/3;
-            background: #e0e0e0;
+            background: transparent;
             transition: transform 0.3s ease;
+            border-radius: 0;
+            box-shadow: none;
         }
         
         div.movie:hover div.movie-img img {
