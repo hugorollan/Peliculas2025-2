@@ -596,9 +596,30 @@
 
                     // Videos (trailers)
                     if (detailsData.videos && detailsData.videos.results) {
-                        const trailer = detailsData.videos.results.find(v => 
-                            v.type === 'Trailer' && v.site === 'YouTube'
+                        // Buscar trailer en español primero
+                        let trailer = detailsData.videos.results.find(v => 
+                            v.type === 'Trailer' && v.site === 'YouTube' && (v.iso_639_1 === 'es' || v.iso_639_1 === 'en')
                         );
+                        
+                        // Si no hay trailer en español o inglés, buscar cualquier trailer de YouTube
+                        if (!trailer) {
+                            trailer = detailsData.videos.results.find(v => 
+                                v.type === 'Trailer' && v.site === 'YouTube'
+                            );
+                        }
+                        
+                        // Si aún no hay trailer, buscar un Teaser
+                        if (!trailer) {
+                            trailer = detailsData.videos.results.find(v => 
+                                v.type === 'Teaser' && v.site === 'YouTube'
+                            );
+                        }
+                        
+                        // Si hay algún video, usar el primero disponible
+                        if (!trailer && detailsData.videos.results.length > 0) {
+                            trailer = detailsData.videos.results.find(v => v.site === 'YouTube');
+                        }
+                        
                         if (trailer) {
                             trailerKey = trailer.key;
                         }
