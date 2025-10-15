@@ -67,15 +67,7 @@ nav {
     margin-top: 16px;
 }
 
-nav a {
-    color: #ffd700;
-    text-decoration: none;
-    margin: 0 12px;
-    font-weight: bold;
-    transition: color 0.2s;
-}
 
-nav a:hover {
     color: #fff;
 }
 
