@@ -338,6 +338,78 @@
         </div>`;
     }
 
+    const searchViewWithError = (errorMessage, previousQuery = '') => {
+        return `
+        <div class="modal-bg">
+          <div class="modal">
+            <h2><i class="fas fa-search"></i> Buscar Película en TMDb</h2>
+            <div style="background: #fee; border: 2px solid #fcc; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                <i class="fas fa-exclamation-triangle" style="color: #d00; margin-right: 8px;"></i>
+                <span style="color: #d00; font-weight: 600;">${errorMessage}</span>
+            </div>
+            <div class="field">
+                Título de la película <br>
+                <input type="text" id="search-query" placeholder="Ej: Inception, Matrix, Avatar..." value="${previousQuery}">
+            </div>
+            <div class="actions">
+                <button class="search"><i class="fas fa-search"></i> Buscar</button>
+                <button class="index"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    const searchViewWithSuggestions = (query, suggestions) => {
+        let suggestionsHtml = '';
+        if (suggestions && suggestions.length > 0) {
+            suggestionsHtml = `
+                <div style="margin-top: 20px; text-align: left;">
+                    <p style="color: var(--tmdb-dark-blue); font-weight: 600; margin-bottom: 12px;">
+                        <i class="fas fa-lightbulb" style="color: var(--tmdb-yellow);"></i> 
+                        Quizás te refieres a:
+                    </p>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${suggestions.slice(0, 5).map(movie => {
+                            const posterUrl = movie.poster_path 
+                                ? `https://image.tmdb.org/t/p/w92${movie.poster_path}`
+                                : 'files/placeholder.png';
+                            const year = movie.release_date ? ` (${movie.release_date.split('-')[0]})` : '';
+                            return `
+                                <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s;" class="suggestion-item" data-suggestion-query="${movie.title}">
+                                    <img src="${posterUrl}" style="width: 50px; height: 75px; object-fit: cover; border-radius: 6px;" onerror="this.src='files/placeholder.png'">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--tmdb-dark-blue);">${movie.title}${year}</div>
+                                        <div style="font-size: 12px; color: #666;">Click para buscar esta película</div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        return `
+        <div class="modal-bg">
+          <div class="modal" style="min-width: 500px;">
+            <h2><i class="fas fa-search"></i> Buscar Película en TMDb</h2>
+            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                <i class="fas fa-info-circle" style="color: #856404; margin-right: 8px;"></i>
+                <span style="color: #856404; font-weight: 600;">No se encontraron resultados para "${query}"</span>
+            </div>
+            <div class="field">
+                Título de la película <br>
+                <input type="text" id="search-query" placeholder="Ej: Inception, Matrix, Avatar..." value="${query}">
+            </div>
+            ${suggestionsHtml}
+            <div class="actions">
+                <button class="search"><i class="fas fa-search"></i> Buscar</button>
+                <button class="index"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
     const resultsView = (resultados) => {
         let view = `
         <div style="width: 100%; padding: 20px; margin-bottom: 80px;">
@@ -508,17 +580,80 @@
             
             const data = await response.json();
             
-            if (data.results) {
+            if (data.results && data.results.length > 0) {
                 lastSearchResults = data.results;
                 document.getElementById('main').innerHTML = resultsView(data.results);
             } else {
-                alert('No se encontraron resultados');
-                searchViewContr();
+                // No se encontraron resultados exactos, buscar sugerencias
+                await searchWithSuggestionsContr(query);
             }
         } catch (err) {
             console.error(err);
-            alert('Error al buscar películas. Por favor, intenta de nuevo.');
-            searchViewContr();
+            document.getElementById('main').innerHTML = searchViewWithError('Error al buscar películas. Por favor, intenta de nuevo.', query);
+        }
+    }
+
+    const searchWithSuggestionsContr = async (query) => {
+        // Intentar obtener sugerencias buscando películas populares o términos similares
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${TMDB_API_KEY}`
+            }
+        };
+
+        try {
+            // Buscar con el primer par de palabras si hay espacios
+            const words = query.split(' ');
+            let suggestions = [];
+            
+            // Intentar buscar con palabras individuales si la búsqueda original no tuvo resultados
+            if (words.length > 1) {
+                for (let word of words) {
+                    if (word.length > 2) { // Solo buscar palabras con más de 2 caracteres
+                        try {
+                            const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(word)}&language=es-ES`, options);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.results && data.results.length > 0) {
+                                    // Añadir películas únicas a las sugerencias
+                                    data.results.forEach(movie => {
+                                        if (!suggestions.find(s => s.id === movie.id)) {
+                                            suggestions.push(movie);
+                                        }
+                                    });
+                                    if (suggestions.length >= 5) break; // Suficientes sugerencias
+                                }
+                            }
+                        } catch (err) {
+                            console.warn(`Error buscando sugerencias para "${word}":`, err);
+                        }
+                    }
+                }
+            }
+            
+            // Si aún no hay sugerencias, buscar películas populares
+            if (suggestions.length === 0) {
+                try {
+                    const response = await fetch(`https://api.themoviedb.org/3/movie/popular?language=es-ES&page=1`, options);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.results) {
+                            suggestions = data.results.slice(0, 5);
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Error obteniendo películas populares:', err);
+                }
+            }
+            
+            // Mostrar vista con sugerencias
+            document.getElementById('main').innerHTML = searchViewWithSuggestions(query, suggestions);
+            
+        } catch (err) {
+            console.error('Error obteniendo sugerencias:', err);
+            document.getElementById('main').innerHTML = searchViewWithError('No se encontraron resultados. Intenta con otro término.', query);
         }
     }
 
@@ -1032,6 +1167,21 @@
     let lastSearchResults = null;
     let lastSearchQuery = '';
 
+    const suggestionClickContr = (ev) => {
+        // Obtener el título de la película sugerida
+        let target = ev.target;
+        while (target && !target.classList.contains('suggestion-item')) {
+            target = target.parentElement;
+        }
+        
+        if (target && target.dataset.suggestionQuery) {
+            const suggestionQuery = target.dataset.suggestionQuery;
+            // Actualizar el input y realizar la búsqueda
+            document.getElementById('search-query').value = suggestionQuery;
+            searchContr();
+        }
+    }
+
     // ROUTER de eventos
     const matchEvent = (ev, sel) => ev.target.matches(sel)
     const myId = (ev) => Number(ev.target.dataset.myId)
@@ -1050,6 +1200,7 @@
         else if (matchEvent(ev, '.add-from-api'))        addFromAPIContr     (ev);
         else if (matchEvent(ev, '.consult-from-api'))    consultFromAPIContr (ev);
         else if (matchEvent(ev, '.back-to-search'))      backToSearchContr   ();
+        else if (matchEvent(ev, '.suggestion-item'))     suggestionClickContr(ev);
     })
 
     // Soporte para presionar Enter en el campo de búsqueda
