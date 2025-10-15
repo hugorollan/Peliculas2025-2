@@ -385,6 +385,7 @@
                         ${genreBadge}
                     </div>
                     <div class="actions">
+                        <button class="consult-from-api" style="z-index:1; position:relative;" data-movie-id="${pelicula.id}"><i class="fas fa-info-circle"></i> Consultar</button>
                         <button class="add-from-api" style="z-index:1; position:relative;" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir</button>
                     </div>
                 </div>`;
@@ -479,6 +480,9 @@
             return;
         }
         
+        // Guardar la consulta para poder volver
+        lastSearchQuery = query;
+        
         // Mostrar estado de carga
         document.getElementById('main').innerHTML = `
             <div style="text-align:center; padding:100px 20px;">
@@ -505,6 +509,7 @@
             const data = await response.json();
             
             if (data.results) {
+                lastSearchResults = data.results;
                 document.getElementById('main').innerHTML = resultsView(data.results);
             } else {
                 alert('No se encontraron resultados');
@@ -701,22 +706,350 @@
         }
     }
 
+    const backToSearchContr = () => {
+        if (lastSearchResults) {
+            document.getElementById('main').innerHTML = resultsView(lastSearchResults);
+        } else {
+            searchViewContr();
+        }
+    }
+
+    const consultFromAPIContr = async (ev) => {
+        const movieId = ev.target.dataset.movieId;
+        
+        if (!movieId) {
+            alert('No se pudo obtener el ID de la película');
+            return;
+        }
+        
+        // Mostrar estado de carga
+        document.getElementById('main').innerHTML = `
+            <div style="text-align:center; padding:100px 20px;">
+                <div class="loading"></div>
+                <p style="margin-top:24px; font-size:18px; color:#666;"><i class="fas fa-info-circle"></i> Consultando información de la película...</p>
+            </div>
+        `;
+        
+        try {
+            const options = {
+                method: 'GET',
+                headers: {
+                    accept: 'application/json',
+                    Authorization: `Bearer ${TMDB_API_KEY}`
+                }
+            };
+            
+            // Obtener detalles completos de la película
+            const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const movieData = await response.json();
+            
+            // Construir objeto de película con toda la información
+            const posterUrl = movieData.poster_path 
+                ? `https://image.tmdb.org/t/p/w500${movieData.poster_path}`
+                : 'files/placeholder.png';
+            
+            // Obtener director
+            let director = 'Desconocido';
+            if (movieData.credits && movieData.credits.crew) {
+                const directorObj = movieData.credits.crew.find(persona => persona.job === 'Director');
+                if (directorObj) {
+                    director = directorObj.name;
+                }
+            }
+            
+            // Obtener reparto
+            let cast = [];
+            if (movieData.credits && movieData.credits.cast) {
+                cast = movieData.credits.cast.slice(0, 8).map(actor => ({
+                    name: actor.name,
+                    character: actor.character,
+                    profile_path: actor.profile_path
+                }));
+            }
+            
+            // Obtener trailer
+            let trailerKey = null;
+            if (movieData.videos && movieData.videos.results) {
+                let trailer = movieData.videos.results.find(v => 
+                    v.type === 'Trailer' && v.site === 'YouTube' && (v.iso_639_1 === 'es' || v.iso_639_1 === 'en')
+                );
+                if (!trailer) {
+                    trailer = movieData.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                }
+                if (!trailer) {
+                    trailer = movieData.videos.results.find(v => v.type === 'Teaser' && v.site === 'YouTube');
+                }
+                if (!trailer && movieData.videos.results.length > 0) {
+                    trailer = movieData.videos.results.find(v => v.site === 'YouTube');
+                }
+                if (trailer) {
+                    trailerKey = trailer.key;
+                }
+            }
+            
+            // Obtener reseñas
+            let reviews = [];
+            if (movieData.reviews && movieData.reviews.results) {
+                reviews = movieData.reviews.results.slice(0, 3).map(review => ({
+                    author: review.author,
+                    content: review.content,
+                    rating: review.author_details?.rating || null,
+                    created_at: review.created_at
+                }));
+            }
+            
+            // Mapeo de géneros
+            const GENRE_MAP = {
+                28: 'Acción', 12: 'Aventura', 16: 'Animación', 35: 'Comedia',
+                80: 'Crimen', 99: 'Documental', 18: 'Drama', 10751: 'Familiar',
+                14: 'Fantasía', 36: 'Historia', 27: 'Terror', 10402: 'Música',
+                9648: 'Misterio', 10749: 'Romance', 878: 'Ciencia ficción',
+                10770: 'Película de TV', 53: 'Suspense', 10752: 'Bélica', 37: 'Western'
+            };
+            
+            let generos = [];
+            if (movieData.genres) {
+                generos = movieData.genres.map(g => g.name);
+            }
+            
+            // Crear objeto de película temporal para consulta
+            const peliculaConsulta = {
+                titulo: movieData.title,
+                director: director,
+                año: movieData.release_date ? movieData.release_date.split('-')[0] : '',
+                miniatura: posterUrl,
+                resumen: movieData.overview || '',
+                rating: movieData.vote_average || null,
+                generos: generos,
+                cast: cast,
+                runtime: movieData.runtime || null,
+                trailerKey: trailerKey,
+                reviews: reviews,
+                budget: movieData.budget || null,
+                revenue: movieData.revenue || null,
+                tagline: movieData.tagline || null,
+                popularity: movieData.popularity || null,
+                original_language: movieData.original_language || null,
+                vote_count: movieData.vote_count || null
+            };
+            
+            // Mostrar la vista de consulta con botón para volver a resultados de búsqueda
+            document.getElementById('main').innerHTML = consultMovieView(peliculaConsulta, movieData);
+            
+        } catch (err) {
+            console.error('Error al consultar película:', err);
+            alert('Error al consultar la película. Por favor, intenta de nuevo.');
+            searchViewContr();
+        }
+    }
+
+    const consultMovieView = (pelicula, movieData) => {
+        // Similar a showView pero con botón de añadir y volver a búsqueda
+        
+        // Círculo de puntuación SVG
+        let ratingCircle = '';
+        if (typeof pelicula.rating === 'number' && !isNaN(pelicula.rating)) {
+            const percent = Math.max(0, Math.min(100, Math.round(pelicula.rating * 10)));
+            const radius = 28;
+            const stroke = 6;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference * (1 - percent / 100);
+            
+            let color = '#20b38e';
+            if (percent < 40) color = '#e85d30';
+            else if (percent < 70) color = '#ffc107';
+            
+            ratingCircle = `
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <svg width="70" height="70" style="display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                        <circle cx="35" cy="35" r="${radius}" stroke="#eee" stroke-width="${stroke}" fill="white" />
+                        <circle cx="35" cy="35" r="${radius}" stroke="${color}" stroke-width="${stroke}" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s; transform:rotate(-90deg); transform-origin:center;" />
+                        <text x="35" y="40" text-anchor="middle" font-size="16" fill="#222" font-weight="bold">${percent}%</text>
+                    </svg>
+                    <div>
+                        <div style="font-size:0.95rem; color:${color}; font-weight:600;"><i class="fas fa-users"></i> Puntuación usuarios</div>
+                        <div style="font-size:0.8rem; color:#666; margin-top:4px;">Basado en ${pelicula.vote_count || 'muchas'} valoraciones</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        let taglineSection = '';
+        if (pelicula.tagline) {
+            taglineSection = `<p style="font-style:italic; color:#666; font-size:16px; margin-bottom:20px; text-align:left; padding-left:4px; border-left:4px solid var(--tmdb-light-blue);">"${pelicula.tagline}"</p>`;
+        }
+
+        let runtimeSection = '';
+        if (pelicula.runtime) {
+            const hours = Math.floor(pelicula.runtime / 60);
+            const minutes = pelicula.runtime % 60;
+            runtimeSection = `<p style="text-align:left;"><i class="fas fa-clock" style="color:var(--tmdb-light-blue);"></i> <strong>Duración:</strong> ${hours}h ${minutes}min</p>`;
+        }
+
+        let extraInfoSection = '';
+        if (pelicula.original_language || pelicula.popularity) {
+            extraInfoSection = '<div style="margin-top:12px;">';
+            if (pelicula.original_language) {
+                const langNames = {
+                    'en': 'Inglés', 'es': 'Español', 'fr': 'Francés', 'de': 'Alemán', 
+                    'it': 'Italiano', 'ja': 'Japonés', 'ko': 'Coreano', 'zh': 'Chino',
+                    'pt': 'Portugués', 'ru': 'Ruso'
+                };
+                const langName = langNames[pelicula.original_language] || pelicula.original_language.toUpperCase();
+                extraInfoSection += `<p style="text-align:left;"><i class="fas fa-language" style="color:var(--tmdb-light-blue);"></i> <strong>Idioma original:</strong> ${langName}</p>`;
+            }
+            if (pelicula.popularity) {
+                const popularityLevel = pelicula.popularity > 100 ? '🔥 Muy popular' : pelicula.popularity > 50 ? '⭐ Popular' : '📊 Moderada';
+                extraInfoSection += `<p style="text-align:left;"><i class="fas fa-chart-line" style="color:var(--tmdb-light-blue);"></i> <strong>Popularidad:</strong> ${popularityLevel} (${pelicula.popularity.toFixed(1)})</p>`;
+            }
+            extraInfoSection += '</div>';
+        }
+
+        let budgetRevenueSection = '';
+        if (pelicula.budget || pelicula.revenue) {
+            budgetRevenueSection = '<div style="margin-top:12px; padding:16px; background:#f9f9f9; border-radius:12px;">';
+            budgetRevenueSection += '<p style="text-align:left; margin:0 0 8px 0;"><strong><i class="fas fa-dollar-sign" style="color:var(--tmdb-light-green);"></i> Información financiera</strong></p>';
+            if (pelicula.budget && pelicula.budget > 0) {
+                const budgetFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.budget);
+                budgetRevenueSection += `<p style="text-align:left; margin:4px 0;"><strong>Presupuesto:</strong> ${budgetFormatted}</p>`;
+            }
+            if (pelicula.revenue && pelicula.revenue > 0) {
+                const revenueFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.revenue);
+                budgetRevenueSection += `<p style="text-align:left; margin:4px 0;"><strong>Recaudación:</strong> ${revenueFormatted}</p>`;
+                
+                if (pelicula.budget && pelicula.budget > 0) {
+                    const profit = pelicula.revenue - pelicula.budget;
+                    const profitFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(profit);
+                    const profitColor = profit > 0 ? '#20b38e' : '#e85d30';
+                    budgetRevenueSection += `<p style="text-align:left; margin:8px 0 0 0; color:${profitColor}; font-weight:600;"><strong>Beneficio:</strong> ${profitFormatted}</p>`;
+                }
+            }
+            budgetRevenueSection += '</div>';
+        }
+
+        let trailerSection = '';
+        if (pelicula.trailerKey) {
+            trailerSection = `
+                <div style="margin-top:24px;">
+                    <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-play-circle" style="color:var(--tmdb-light-blue);"></i> Trailer oficial</p>
+                    <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.3);">
+                        <iframe 
+                            style="position:absolute; top:0; left:0; width:100%; height:100%;" 
+                            src="https://www.youtube.com/embed/${pelicula.trailerKey}" 
+                            title="YouTube video player" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            `;
+        }
+
+        let castSection = '';
+        if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
+            const castList = pelicula.cast.slice(0, 8).map(actor => {
+                const actorImage = actor.profile_path 
+                    ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
+                    : 'files/placeholder.png';
+                return `<div class="cast-item">
+                    <img src="${actorImage}" alt="${actor.name}" onerror="this.src='files/placeholder.png'" />
+                    <div class="cast-name">${actor.name}</div>
+                    ${actor.character ? `<div class="cast-character">${actor.character}</div>` : ''}
+                </div>`;
+            }).join('');
+            castSection = `
+                <div style="margin-top:24px;">
+                    <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-users" style="color:var(--tmdb-light-blue);"></i> Reparto principal</p>
+                    <div class="cast-grid">
+                        ${castList}
+                    </div>
+                </div>
+            `;
+        }
+
+        let reviewsSection = '';
+        if (pelicula.reviews && Array.isArray(pelicula.reviews) && pelicula.reviews.length > 0) {
+            const reviewsList = pelicula.reviews.map(review => {
+                const ratingBadge = review.rating ? `<span style="background:#20b38e; color:white; padding:4px 10px; border-radius:16px; font-size:12px; font-weight:600;"><i class="fas fa-star"></i> ${review.rating}/10</span>` : '';
+                const date = review.created_at ? new Date(review.created_at).toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
+                const truncatedContent = review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content;
+                return `
+                    <div style="background:white; padding:18px; border-radius:12px; margin-bottom:14px; border-left:4px solid #01b4e4; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <strong style="color:#032541; font-size:15px;"><i class="fas fa-user-circle"></i> ${review.author}</strong>
+                            ${ratingBadge}
+                        </div>
+                        ${date ? `<div style="font-size:12px; color:#888; margin-bottom:10px;"><i class="far fa-calendar"></i> ${date}</div>` : ''}
+                        <p style="color:#444; font-size:13px; line-height:1.7; margin:0;">${truncatedContent}</p>
+                    </div>
+                `;
+            }).join('');
+            reviewsSection = `
+                <div style="margin-top:24px;">
+                    <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-comment-dots" style="color:var(--tmdb-light-blue);"></i> Reseñas de usuarios</p>
+                    ${reviewsList}
+                </div>
+            `;
+        }
+
+        return `
+        <div class="modal-bg">
+            <div class="modal modal-horizontal">
+                <div class="modal-poster">
+                    <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
+                </div>
+                <div class="modal-info">
+                    <h2 style="margin-top:0; margin-bottom:12px; text-align:left; color:var(--tmdb-dark-blue); font-size:28px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
+                    ${taglineSection}
+                    <p style="text-align:left;"><i class="fas fa-user-tie" style="color:var(--tmdb-light-blue);"></i> <strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                    <p style="text-align:left;"><i class="fas fa-calendar-alt" style="color:var(--tmdb-light-blue);"></i> <strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
+                    ${runtimeSection}
+                    ${extraInfoSection}
+                    ${ratingCircle}
+                    ${pelicula.generos && pelicula.generos.length > 0 ? `<p style="text-align:left;"><i class="fas fa-tags" style="color:var(--tmdb-light-blue);"></i> <strong>Géneros:</strong> ${pelicula.generos.map(g => `<span class="cast-badge">${g}</span>`).join(' ')}</p>` : ''}
+                    ${budgetRevenueSection}
+                    ${pelicula.resumen ? `<div style='margin:16px 0; padding:16px; background:#f9f9f9; border-radius:12px;'><p style='margin:0; color:#444; font-size:14px; text-align:left; line-height:1.7;'><strong><i class="fas fa-align-left" style="color:var(--tmdb-light-blue);"></i> Sinopsis:</strong><br><br>${pelicula.resumen}</p></div>` : ''}
+                    ${trailerSection}
+                    ${castSection}
+                    ${reviewsSection}
+                    <div class="actions" style="justify-content:flex-start; margin-top:28px; gap:12px;">
+                        <button class="add-from-api" data-movie='${JSON.stringify(movieData).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir a mi lista</button>
+                        <button class="back-to-search"><i class="fas fa-arrow-left"></i> Volver a búsqueda</button>
+                        <button class="index"><i class="fas fa-home"></i> Ir al inicio</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // Variable global para almacenar resultados de búsqueda
+    let lastSearchResults = null;
+    let lastSearchQuery = '';
+
     // ROUTER de eventos
     const matchEvent = (ev, sel) => ev.target.matches(sel)
     const myId = (ev) => Number(ev.target.dataset.myId)
 
     document.addEventListener('click', ev => {
-        if      (matchEvent(ev, '.index'))        indexContr       ();
-        else if (matchEvent(ev, '.edit'))         editContr        (myId(ev));
-        else if (matchEvent(ev, '.update'))       updateContr      (myId(ev));
-        else if (matchEvent(ev, '.show'))         showContr        (myId(ev));
-        else if (matchEvent(ev, '.new'))          newContr         ();
-        else if (matchEvent(ev, '.create'))       createContr      ();
-        else if (matchEvent(ev, '.delete'))       deleteContr      (myId(ev));
-        else if (matchEvent(ev, '.reset'))        resetContr       ();
-        else if (matchEvent(ev, '.search-view'))  searchViewContr  ();
-        else if (matchEvent(ev, '.search'))       searchContr      ();
-        else if (matchEvent(ev, '.add-from-api')) addFromAPIContr  (ev);
+        if      (matchEvent(ev, '.index'))               indexContr          ();
+        else if (matchEvent(ev, '.edit'))                editContr           (myId(ev));
+        else if (matchEvent(ev, '.update'))              updateContr         (myId(ev));
+        else if (matchEvent(ev, '.show'))                showContr           (myId(ev));
+        else if (matchEvent(ev, '.new'))                 newContr            ();
+        else if (matchEvent(ev, '.create'))              createContr         ();
+        else if (matchEvent(ev, '.delete'))              deleteContr         (myId(ev));
+        else if (matchEvent(ev, '.reset'))               resetContr          ();
+        else if (matchEvent(ev, '.search-view'))         searchViewContr     ();
+        else if (matchEvent(ev, '.search'))              searchContr         ();
+        else if (matchEvent(ev, '.add-from-api'))        addFromAPIContr     (ev);
+        else if (matchEvent(ev, '.consult-from-api'))    consultFromAPIContr (ev);
+        else if (matchEvent(ev, '.back-to-search'))      backToSearchContr   ();
     })
 
     // Soporte para presionar Enter en el campo de búsqueda
