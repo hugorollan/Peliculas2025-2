@@ -36,9 +36,24 @@
         let i=0;
         let view = "";
         if (peliculas.length === 0) {
-            view += `<div style='color:#888; margin:20px 0;'>No hay películas</div>`;
+            view += `<div style='color:#888; margin:40px 0; text-align:center; font-size:18px;'>
+                <i class="fas fa-film" style="font-size:48px; color:#ccc; display:block; margin-bottom:16px;"></i>
+                No hay películas en tu colección
+            </div>`;
         }
         while(i < peliculas.length) {
+            // Determinar el género principal si existe
+            let genreBadge = '';
+            if (peliculas[i].generos && peliculas[i].generos.length > 0) {
+                genreBadge = `<span class="info-badge badge-genre">${peliculas[i].generos[0]}</span>`;
+            }
+            
+            // Añadir badge de rating si existe
+            let ratingBadge = '';
+            if (peliculas[i].rating) {
+                ratingBadge = `<span class="info-badge badge-rating"><i class="fas fa-star"></i> ${peliculas[i].rating.toFixed(1)}</span>`;
+            }
+            
             view += `
             <div class="movie">
                 <div class="movie-img">
@@ -47,13 +62,15 @@
                 <div class="title">
                     ${peliculas[i].titulo || "<em>Sin título</em>"}
                 </div>
-                <div style="text-align:center; font-size:12px; color:#666; margin-bottom:6px;">
-                    ${peliculas[i].año ? `Año: ${peliculas[i].año}` : ""}
+                <div style="text-align:center; font-size:11px; padding:0 12px; margin-bottom:10px;">
+                    ${ratingBadge}
+                    ${peliculas[i].año ? `<span class="info-badge badge-year"><i class="fas fa-calendar"></i> ${peliculas[i].año}</span>` : ""}
+                    ${genreBadge}
                 </div>
                 <div class="actions">
-                    <button class="show" data-my-id="${i}">ver</button>
-                    <button class="edit" data-my-id="${i}">editar</button>
-                    <button class="delete" data-my-id="${i}">borrar</button>
+                    <button class="show" data-my-id="${i}"><i class="fas fa-eye"></i> ver</button>
+                    <button class="edit" data-my-id="${i}"><i class="fas fa-edit"></i> editar</button>
+                    <button class="delete" data-my-id="${i}"><i class="fas fa-trash"></i> borrar</button>
                 </div>
             </div>\n`;
             i = i + 1;
@@ -65,7 +82,7 @@
         return `
         <div class="modal-bg">
           <div class="modal">
-            <h2>Editar Película</h2>
+            <h2><i class="fas fa-edit"></i> Editar Película</h2>
             <div class="field" style="width:100%; margin-bottom:10px;">
                 Título <br>
                 <input type="text" id="titulo" placeholder="Título" value="${pelicula.titulo}" style="width:100%;">
@@ -83,8 +100,8 @@
                 <input type="text" id="miniatura" placeholder="URL de la miniatura" value="${pelicula.miniatura}" style="width:100%;">
             </div>
             <div class="actions" style="width:100%; display:flex; justify-content:center; gap:10px;">
-                <button class="update" data-my-id="${i}">Actualizar</button>
-                <button class="index">Volver</button>
+                <button class="update" data-my-id="${i}"><i class="fas fa-save"></i> Actualizar</button>
+                <button class="index"><i class="fas fa-times"></i> Cancelar</button>
             </div>
           </div>
         </div>`;
@@ -95,18 +112,27 @@
         let ratingCircle = '';
         if (typeof pelicula.rating === 'number' && !isNaN(pelicula.rating)) {
             const percent = Math.max(0, Math.min(100, Math.round(pelicula.rating * 10)));
-            const radius = 22;
+            const radius = 28;
             const stroke = 6;
             const circumference = 2 * Math.PI * radius;
             const offset = circumference * (1 - percent / 100);
+            
+            // Color basado en el rating
+            let color = '#20b38e'; // Verde por defecto
+            if (percent < 40) color = '#e85d30'; // Rojo
+            else if (percent < 70) color = '#ffc107'; // Amarillo
+            
             ratingCircle = `
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                    <svg width="50" height="50" style="display:block;">
-                        <circle cx="25" cy="25" r="${radius}" stroke="#eee" stroke-width="${stroke}" fill="none" />
-                        <circle cx="25" cy="25" r="${radius}" stroke="#20b38e" stroke-width="${stroke}" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s;" />
-                        <text x="25" y="30" text-anchor="middle" font-size="13" fill="#222" font-weight="bold">${percent}%</text>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <svg width="70" height="70" style="display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                        <circle cx="35" cy="35" r="${radius}" stroke="#eee" stroke-width="${stroke}" fill="white" />
+                        <circle cx="35" cy="35" r="${radius}" stroke="${color}" stroke-width="${stroke}" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s; transform:rotate(-90deg); transform-origin:center;" />
+                        <text x="35" y="40" text-anchor="middle" font-size="16" fill="#222" font-weight="bold">${percent}%</text>
                     </svg>
-                    <span style="font-size:0.95rem; color:#20b38e; font-weight:600;">Puntuación usuarios</span>
+                    <div>
+                        <div style="font-size:0.95rem; color:${color}; font-weight:600;"><i class="fas fa-users"></i> Puntuación usuarios</div>
+                        <div style="font-size:0.8rem; color:#666; margin-top:4px;">Basado en ${pelicula.vote_count || 'muchas'} valoraciones</div>
+                    </div>
                 </div>
             `;
         }
@@ -114,7 +140,7 @@
         // Mostrar tagline si está disponible
         let taglineSection = '';
         if (pelicula.tagline) {
-            taglineSection = `<p style="font-style:italic; color:#666; font-size:15px; margin-bottom:16px; text-align:left;">"${pelicula.tagline}"</p>`;
+            taglineSection = `<p style="font-style:italic; color:#666; font-size:16px; margin-bottom:20px; text-align:left; padding-left:4px; border-left:4px solid var(--tmdb-light-blue);">"${pelicula.tagline}"</p>`;
         }
 
         // Mostrar duración si está disponible
@@ -122,20 +148,49 @@
         if (pelicula.runtime) {
             const hours = Math.floor(pelicula.runtime / 60);
             const minutes = pelicula.runtime % 60;
-            runtimeSection = `<p style="text-align:left;"><strong>Duración:</strong> ${hours}h ${minutes}min (${pelicula.runtime} minutos)</p>`;
+            runtimeSection = `<p style="text-align:left;"><i class="fas fa-clock" style="color:var(--tmdb-light-blue);"></i> <strong>Duración:</strong> ${hours}h ${minutes}min</p>`;
+        }
+
+        // Mostrar idioma original y popularidad si están disponibles
+        let extraInfoSection = '';
+        if (pelicula.original_language || pelicula.popularity) {
+            extraInfoSection = '<div style="margin-top:12px;">';
+            if (pelicula.original_language) {
+                const langNames = {
+                    'en': 'Inglés', 'es': 'Español', 'fr': 'Francés', 'de': 'Alemán', 
+                    'it': 'Italiano', 'ja': 'Japonés', 'ko': 'Coreano', 'zh': 'Chino',
+                    'pt': 'Portugués', 'ru': 'Ruso'
+                };
+                const langName = langNames[pelicula.original_language] || pelicula.original_language.toUpperCase();
+                extraInfoSection += `<p style="text-align:left;"><i class="fas fa-language" style="color:var(--tmdb-light-blue);"></i> <strong>Idioma original:</strong> ${langName}</p>`;
+            }
+            if (pelicula.popularity) {
+                const popularityLevel = pelicula.popularity > 100 ? '🔥 Muy popular' : pelicula.popularity > 50 ? '⭐ Popular' : '📊 Moderada';
+                extraInfoSection += `<p style="text-align:left;"><i class="fas fa-chart-line" style="color:var(--tmdb-light-blue);"></i> <strong>Popularidad:</strong> ${popularityLevel} (${pelicula.popularity.toFixed(1)})</p>`;
+            }
+            extraInfoSection += '</div>';
         }
 
         // Mostrar presupuesto y recaudación si están disponibles
         let budgetRevenueSection = '';
         if (pelicula.budget || pelicula.revenue) {
-            budgetRevenueSection = '<div style="margin-top:12px;">';
+            budgetRevenueSection = '<div style="margin-top:12px; padding:16px; background:#f9f9f9; border-radius:12px;">';
+            budgetRevenueSection += '<p style="text-align:left; margin:0 0 8px 0;"><strong><i class="fas fa-dollar-sign" style="color:var(--tmdb-light-green);"></i> Información financiera</strong></p>';
             if (pelicula.budget && pelicula.budget > 0) {
                 const budgetFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.budget);
-                budgetRevenueSection += `<p style="text-align:left;"><strong>Presupuesto:</strong> ${budgetFormatted}</p>`;
+                budgetRevenueSection += `<p style="text-align:left; margin:4px 0;"><strong>Presupuesto:</strong> ${budgetFormatted}</p>`;
             }
             if (pelicula.revenue && pelicula.revenue > 0) {
                 const revenueFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.revenue);
-                budgetRevenueSection += `<p style="text-align:left;"><strong>Recaudación:</strong> ${revenueFormatted}</p>`;
+                budgetRevenueSection += `<p style="text-align:left; margin:4px 0;"><strong>Recaudación:</strong> ${revenueFormatted}</p>`;
+                
+                // Calcular beneficio si hay ambos datos
+                if (pelicula.budget && pelicula.budget > 0) {
+                    const profit = pelicula.revenue - pelicula.budget;
+                    const profitFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(profit);
+                    const profitColor = profit > 0 ? '#20b38e' : '#e85d30';
+                    budgetRevenueSection += `<p style="text-align:left; margin:8px 0 0 0; color:${profitColor}; font-weight:600;"><strong>Beneficio:</strong> ${profitFormatted}</p>`;
+                }
             }
             budgetRevenueSection += '</div>';
         }
@@ -144,9 +199,9 @@
         let trailerSection = '';
         if (pelicula.trailerKey) {
             trailerSection = `
-                <div style="margin-top:20px;">
-                    <p style="font-weight:600; margin-bottom:12px; text-align:left;"><strong>🎬 Trailer:</strong></p>
-                    <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                <div style="margin-top:24px;">
+                    <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-play-circle" style="color:var(--tmdb-light-blue);"></i> Trailer oficial</p>
+                    <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.3);">
                         <iframe 
                             style="position:absolute; top:0; left:0; width:100%; height:100%;" 
                             src="https://www.youtube.com/embed/${pelicula.trailerKey}" 
@@ -174,8 +229,8 @@
                 </div>`;
             }).join('');
             castSection = `
-                <div style="margin-top:16px;">
-                    <p style="font-weight:600; margin-bottom:12px; text-align:left;"><strong>Reparto:</strong></p>
+                <div style="margin-top:24px;">
+                    <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-users" style="color:var(--tmdb-light-blue);"></i> Reparto principal</p>
                     <div class="cast-grid">
                         ${castList}
                     </div>
@@ -187,23 +242,23 @@
         let reviewsSection = '';
         if (pelicula.reviews && Array.isArray(pelicula.reviews) && pelicula.reviews.length > 0) {
             const reviewsList = pelicula.reviews.map(review => {
-                const ratingBadge = review.rating ? `<span style="background:#20b38e; color:white; padding:2px 8px; border-radius:12px; font-size:12px; font-weight:600;">⭐ ${review.rating}/10</span>` : '';
-                const date = review.created_at ? new Date(review.created_at).toLocaleDateString('es-ES') : '';
+                const ratingBadge = review.rating ? `<span style="background:#20b38e; color:white; padding:4px 10px; border-radius:16px; font-size:12px; font-weight:600;"><i class="fas fa-star"></i> ${review.rating}/10</span>` : '';
+                const date = review.created_at ? new Date(review.created_at).toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
                 const truncatedContent = review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content;
                 return `
-                    <div style="background:#f9f9f9; padding:16px; border-radius:8px; margin-bottom:12px; border-left:4px solid #01b4e4;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <strong style="color:#032541;">${review.author}</strong>
+                    <div style="background:white; padding:18px; border-radius:12px; margin-bottom:14px; border-left:4px solid #01b4e4; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <strong style="color:#032541; font-size:15px;"><i class="fas fa-user-circle"></i> ${review.author}</strong>
                             ${ratingBadge}
                         </div>
-                        ${date ? `<div style="font-size:12px; color:#888; margin-bottom:8px;">${date}</div>` : ''}
-                        <p style="color:#444; font-size:13px; line-height:1.6; margin:0;">${truncatedContent}</p>
+                        ${date ? `<div style="font-size:12px; color:#888; margin-bottom:10px;"><i class="far fa-calendar"></i> ${date}</div>` : ''}
+                        <p style="color:#444; font-size:13px; line-height:1.7; margin:0;">${truncatedContent}</p>
                     </div>
                 `;
             }).join('');
             reviewsSection = `
-                <div style="margin-top:20px;">
-                    <p style="font-weight:600; margin-bottom:12px; text-align:left;"><strong>📝 Reseñas de usuarios:</strong></p>
+                <div style="margin-top:24px;">
+                    <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-comment-dots" style="color:var(--tmdb-light-blue);"></i> Reseñas de usuarios</p>
                     ${reviewsList}
                 </div>
             `;
@@ -216,20 +271,21 @@
                     <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
                 </div>
                 <div class="modal-info">
-                    <h2 style="margin-top:0; margin-bottom:16px; text-align:left;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
+                    <h2 style="margin-top:0; margin-bottom:12px; text-align:left; color:var(--tmdb-dark-blue); font-size:28px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
                     ${taglineSection}
-                    <p style="text-align:left;"><strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
-                    <p style="text-align:left;"><strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
+                    <p style="text-align:left;"><i class="fas fa-user-tie" style="color:var(--tmdb-light-blue);"></i> <strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                    <p style="text-align:left;"><i class="fas fa-calendar-alt" style="color:var(--tmdb-light-blue);"></i> <strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
                     ${runtimeSection}
+                    ${extraInfoSection}
                     ${ratingCircle}
-                    ${pelicula.generos && pelicula.generos.length > 0 ? `<p style="text-align:left;"><strong>Géneros:</strong> ${pelicula.generos.join(', ')}</p>` : ''}
+                    ${pelicula.generos && pelicula.generos.length > 0 ? `<p style="text-align:left;"><i class="fas fa-tags" style="color:var(--tmdb-light-blue);"></i> <strong>Géneros:</strong> ${pelicula.generos.map(g => `<span class="cast-badge">${g}</span>`).join(' ')}</p>` : ''}
                     ${budgetRevenueSection}
-                    ${pelicula.resumen ? `<p style='margin:12px 0; color:#444; font-size:14px; text-align:left; line-height:1.6;'><strong>Resumen:</strong> ${pelicula.resumen}</p>` : ''}
+                    ${pelicula.resumen ? `<div style='margin:16px 0; padding:16px; background:#f9f9f9; border-radius:12px;'><p style='margin:0; color:#444; font-size:14px; text-align:left; line-height:1.7;'><strong><i class="fas fa-align-left" style="color:var(--tmdb-light-blue);"></i> Sinopsis:</strong><br><br>${pelicula.resumen}</p></div>` : ''}
                     ${trailerSection}
                     ${castSection}
                     ${reviewsSection}
-                    <div class="actions" style="justify-content:flex-start; margin-top:20px;">
-                        <button class="index">Volver</button>
+                    <div class="actions" style="justify-content:flex-start; margin-top:28px;">
+                        <button class="index"><i class="fas fa-arrow-left"></i> Volver</button>
                     </div>
                 </div>
             </div>
@@ -240,7 +296,7 @@
         return `
         <div class="modal-bg">
           <div class="modal">
-            <h2>Crear Película</h2>
+            <h2><i class="fas fa-plus-circle"></i> Crear Película</h2>
             <div class="field">
                 Título <br>
                 <input type="text" id="titulo" placeholder="Título">
@@ -258,8 +314,8 @@
                 <input type="text" id="miniatura" placeholder="URL de la miniatura">
             </div>
             <div class="actions">
-                <button class="create">Crear</button>
-                <button class="index">Volver</button>
+                <button class="create"><i class="fas fa-save"></i> Crear</button>
+                <button class="index"><i class="fas fa-times"></i> Cancelar</button>
             </div>
           </div>
         </div>`;
@@ -269,14 +325,14 @@
         return `
         <div class="modal-bg">
           <div class="modal">
-            <h2>Buscar Película en TMDb</h2>
+            <h2><i class="fas fa-search"></i> Buscar Película en TMDb</h2>
             <div class="field">
                 Título de la película <br>
-                <input type="text" id="search-query" placeholder="Ej: Inception">
+                <input type="text" id="search-query" placeholder="Ej: Inception, Matrix, Avatar...">
             </div>
             <div class="actions">
-                <button class="search">Buscar</button>
-                <button class="index">Volver</button>
+                <button class="search"><i class="fas fa-search"></i> Buscar</button>
+                <button class="index"><i class="fas fa-times"></i> Cancelar</button>
             </div>
           </div>
         </div>`;
@@ -285,10 +341,13 @@
     const resultsView = (resultados) => {
         let view = `
         <div style="width: 100%; padding: 20px;">
-            <h2 style="text-align: center; color: white; font-size: 28px; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Resultados de la búsqueda</h2>`;
+            <h2 style="text-align: center; color: var(--tmdb-dark-blue); font-size: 32px; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-film"></i> Resultados de la búsqueda</h2>`;
         
         if (!resultados || resultados.length === 0) {
-            view += `<div style='color: #90cea1; margin:20px 0; text-align: center; font-size: 16px;'>No se encontraron películas</div>`;
+            view += `<div style='color: #666; margin:40px 0; text-align: center; font-size: 18px;'>
+                <i class="fas fa-search" style="font-size:64px; color:#ccc; display:block; margin-bottom:20px;"></i>
+                No se encontraron películas
+            </div>`;
         } else {
             view += `<div style="display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;">`;
             resultados.forEach(pelicula => {
@@ -298,18 +357,35 @@
                 const releaseYear = pelicula.release_date ? pelicula.release_date.split('-')[0] : 'N/A';
                 const rating = pelicula.vote_average ? pelicula.vote_average.toFixed(1) : 'N/A';
                 
+                // Género principal si existe
+                let genreBadge = '';
+                if (pelicula.genre_ids && pelicula.genre_ids.length > 0) {
+                    const GENRE_MAP = {
+                        28: 'Acción', 12: 'Aventura', 16: 'Animación', 35: 'Comedia',
+                        80: 'Crimen', 99: 'Documental', 18: 'Drama', 10751: 'Familiar',
+                        14: 'Fantasía', 36: 'Historia', 27: 'Terror', 10402: 'Música',
+                        9648: 'Misterio', 10749: 'Romance', 878: 'Ciencia ficción',
+                        10770: 'Película de TV', 53: 'Suspense', 10752: 'Bélica', 37: 'Western'
+                    };
+                    const genreName = GENRE_MAP[pelicula.genre_ids[0]] || '';
+                    if (genreName) {
+                        genreBadge = `<span class="info-badge badge-genre">${genreName}</span>`;
+                    }
+                }
+                
                 view += `
                 <div class="movie">
                     <div class="movie-img">
                         <img src="${posterUrl}" onerror="this.src='files/placeholder.png'"/>
                     </div>
                     <div class="title">${pelicula.title || "<em>Sin título</em>"}</div>
-                    <div style="display: flex; justify-content: space-around; padding: 8px 10px; font-size: 12px; color: #666;">
-                        <span>⭐ ${rating}</span>
-                        <span>📅 ${releaseYear}</span>
+                    <div style="text-align:center; font-size:11px; padding:0 12px; margin-bottom:10px;">
+                        <span class="info-badge badge-rating"><i class="fas fa-star"></i> ${rating}</span>
+                        <span class="info-badge badge-year"><i class="fas fa-calendar"></i> ${releaseYear}</span>
+                        ${genreBadge}
                     </div>
                     <div class="actions">
-                        <button class="add-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'>Añadir</button>
+                        <button class="add-from-api" data-movie='${JSON.stringify(pelicula).replace(/'/g, "&apos;")}'><i class="fas fa-plus"></i> Añadir</button>
                     </div>
                 </div>`;
             });
@@ -317,8 +393,8 @@
         }
         
         view += `
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="index">Volver al inicio</button>
+            <div style="text-align: center; margin-top: 40px;">
+                <button class="index"><i class="fas fa-arrow-left"></i> Volver al inicio</button>
             </div>
         </div>`;
         
@@ -402,6 +478,14 @@
             alert('Por favor, ingresa un término de búsqueda');
             return;
         }
+        
+        // Mostrar estado de carga
+        document.getElementById('main').innerHTML = `
+            <div style="text-align:center; padding:100px 20px;">
+                <div class="loading"></div>
+                <p style="margin-top:24px; font-size:18px; color:#666;"><i class="fas fa-search"></i> Buscando películas...</p>
+            </div>
+        `;
 
         const options = {
             method: 'GET',
@@ -424,10 +508,12 @@
                 document.getElementById('main').innerHTML = resultsView(data.results);
             } else {
                 alert('No se encontraron resultados');
+                searchViewContr();
             }
         } catch (err) {
             console.error(err);
             alert('Error al buscar películas. Por favor, intenta de nuevo.');
+            searchViewContr();
         }
     }
 
@@ -454,6 +540,9 @@
             let budget = null;
             let revenue = null;
             let tagline = null;
+            let popularity = movieData.popularity || null;
+            let original_language = movieData.original_language || null;
+            let vote_count = movieData.vote_count || null;
 
             try {
                 const options = {
@@ -574,7 +663,10 @@
                 reviews: reviews,
                 budget: budget,
                 revenue: revenue,
-                tagline: tagline
+                tagline: tagline,
+                popularity: popularity,
+                original_language: original_language,
+                vote_count: vote_count
             };
 
             mis_peliculas.push(nuevaPelicula);
