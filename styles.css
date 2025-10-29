@@ -745,3 +745,61 @@ button.add-from-api:hover {
     color: #ffd700;
     border-top: 1px solid #333;
 }
+
+/* Navigation bar styles */
+nav {
+    background: #f5f5f5;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Movie info container in templates */
+.movie-info {
+    text-align: center;
+    font-size: 11px;
+    padding: 0 12px;
+    margin-bottom: 10px;
+}
+
+/* Empty collection message */
+.empty-collection {
+    color: #888;
+    margin: 40px 0;
+    text-align: center;
+    font-size: 18px;
+}
+
+.empty-collection i {
+    font-size: 48px;
+    color: #ccc;
+    display: block;
+    margin-bottom: 16px;
+}
+
+/* Footer styles */
+footer {
+    width: 100%;
+    text-align: center;
+    padding: 18px 0 16px 0;
+    color: #fff;
+    background: linear-gradient(135deg, #0d253f 0%, #01b4e4 100%);
+    font-size: 14px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    box-shadow: 0 -4px 20px rgba(13, 37, 63, 0.3);
+    z-index: 9999;
+    border-top: 2px solid rgba(1, 180, 228, 0.3);
+}
+
+.footer-copyright {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.footer-attribution {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: 0.9;
+    font-weight: 500;
+}

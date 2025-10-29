@@ -10,7 +10,7 @@
 <body>
     <h1><i class="fas fa-film"></i> Películas Favoritas de Hugo Rollán</h1>
 
-    <nav style="background:#f5f5f5; padding:10px; margin-bottom:10px;">
+    <nav>
         <button class="index"><i class="fas fa-home"></i> Inicio</button>
         <button class="new"><i class="fas fa-plus-circle"></i> Añadir película</button>
         <button class="search-view"><i class="fas fa-search"></i> Buscar película</button>
@@ -24,7 +24,7 @@
                 <img src="" alt="Movie poster"/>
             </div>
             <div class="title"></div>
-            <div class="movie-info" style="text-align:center; font-size:11px; padding:0 12px; margin-bottom:10px;">
+            <div class="movie-info">
                 <!-- Badges will be inserted here -->
             </div>
             <div class="actions">
@@ -36,16 +36,16 @@
     </template>
     
     <template id="empty-collection-template">
-        <div style='color:#888; margin:40px 0; text-align:center; font-size:18px;'>
-            <i class="fas fa-film" style="font-size:48px; color:#ccc; display:block; margin-bottom:16px;"></i>
+        <div class="empty-collection">
+            <i class="fas fa-film"></i>
             No hay películas en tu colección
         </div>
     </template>
     
     <div id="main"></div>
-    <footer style="width:100%;text-align:center;padding:18px 0 16px 0;color:#fff;background:linear-gradient(135deg, #0d253f 0%, #01b4e4 100%);font-size:14px;position:fixed;bottom:0;left:0;box-shadow:0 -4px 20px rgba(13, 37, 63, 0.3);z-index:9999;border-top:2px solid rgba(1, 180, 228, 0.3);">
-        <div style="font-weight:600;letter-spacing:0.5px;">&copy; 2025 Hugo Rollán. Todos los derechos reservados.</div>
-        <div style="margin-top:6px;font-size:13px;opacity:0.9;font-weight:500;">
+    <footer>
+        <div class="footer-copyright">&copy; 2025 Hugo Rollán. Todos los derechos reservados.</div>
+        <div class="footer-attribution">
             <i class="fas fa-database"></i> Powered by TMDb API
         </div>
     </footer>

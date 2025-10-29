@@ -80,11 +80,9 @@
 
     // ========================================================================
     // REFACTORED VERSION using HTML Templates and createElement
-    // This is a more efficient and maintainable approach that:
-    // 1. Uses HTML <template> elements for better performance
-    // 2. Uses createElement and DOM manipulation instead of innerHTML
-    // 3. Avoids XSS vulnerabilities by properly handling text content
-    // 4. Prevents full DOM regeneration on each render
+    // This is an EXAMPLE implementation demonstrating best practices for DOM manipulation.
+    // It is NOT integrated into the main application to maintain backward compatibility.
+    // See DOM_REFACTORING_GUIDE.md for detailed explanation and integration instructions.
     // ========================================================================
     
     const indexViewRefactored = (peliculas) => {
@@ -170,13 +168,6 @@
         // Return the fragment (can be appended directly to DOM)
         return fragment;
     }
-    
-    // Note: To use the refactored version, replace:
-    //   document.getElementById('main').innerHTML = indexView(mis_peliculas);
-    // with:
-    //   const main = document.getElementById('main');
-    //   main.innerHTML = ''; // Clear existing content
-    //   main.appendChild(indexViewRefactored(mis_peliculas));
 
     const editView = (i, pelicula) => {
         return `
