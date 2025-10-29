@@ -1,7 +1,7 @@
 // MODELO DE DATOS
 
-    // API Key de TMDb
-    const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzOTgxNWVjZTI4ZjcyNWJlZGRmY2Y3OGE0YzRjZGU0ZiIsIm5iZiI6MTc2MDQ1NjUxNS4xNDcsInN1YiI6IjY4ZWU2ZjQzNDYzMzQ0Yjg0MTlkZjQ3MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ejdXz4pm0dZn0OAVJvJ16R8SwNAa-MBkO_yttUiblLk';
+    // API Base URL - now using our proxy server for security
+    const API_BASE_URL = '/api';
 
      let mis_peliculas_iniciales = [
          {titulo: "Superlópez",   director: "Javier Ruiz Caldera", año: "2018", miniatura: "files/superlopez.png"},
@@ -565,16 +565,8 @@
             </div>
         `;
 
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                Authorization: `Bearer ${TMDB_API_KEY}`
-            }
-        };
-
         try {
-            const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=es-ES`, options);
+            const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}&language=es-ES`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -597,14 +589,6 @@
 
     const searchWithSuggestionsContr = async (query) => {
         // Intentar obtener sugerencias buscando películas populares o términos similares
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                Authorization: `Bearer ${TMDB_API_KEY}`
-            }
-        };
-
         try {
             // Buscar con el primer par de palabras si hay espacios
             const words = query.split(' ');
@@ -615,7 +599,7 @@
                 for (let word of words) {
                     if (word.length > 2) { // Solo buscar palabras con más de 2 caracteres
                         try {
-                            const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(word)}&language=es-ES`, options);
+                            const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(word)}&language=es-ES`);
                             if (response.ok) {
                                 const data = await response.json();
                                 if (data.results && data.results.length > 0) {
@@ -638,7 +622,7 @@
             // Si aún no hay sugerencias, buscar películas populares
             if (suggestions.length === 0) {
                 try {
-                    const response = await fetch(`https://api.themoviedb.org/3/movie/popular?language=es-ES&page=1`, options);
+                    const response = await fetch(`${API_BASE_URL}/popular?language=es-ES&page=1`);
                     if (response.ok) {
                         const data = await response.json();
                         if (data.results) {
@@ -687,16 +671,8 @@
             let vote_count = movieData.vote_count || null;
 
             try {
-                const options = {
-                    method: 'GET',
-                    headers: {
-                        accept: 'application/json',
-                        Authorization: `Bearer ${TMDB_API_KEY}`
-                    }
-                };
-
                 // Obtener detalles completos de la película
-                const detailsRes = await fetch(`https://api.themoviedb.org/3/movie/${movieData.id}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+                const detailsRes = await fetch(`${API_BASE_URL}/movie/${movieData.id}?language=es-ES&append_to_response=credits,videos,reviews`);
                 if (detailsRes.ok) {
                     const detailsData = await detailsRes.json();
                     
@@ -868,16 +844,8 @@
         `;
         
         try {
-            const options = {
-                method: 'GET',
-                headers: {
-                    accept: 'application/json',
-                    Authorization: `Bearer ${TMDB_API_KEY}`
-                }
-            };
-            
             // Obtener detalles completos de la película
-            const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+            const response = await fetch(`${API_BASE_URL}/movie/${movieId}?language=es-ES&append_to_response=credits,videos,reviews`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
