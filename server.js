@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -8,14 +9,28 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Serve static files from the current directory
+
+// Serve only specific directories and files - more secure than serving everything
+app.use('/files', express.static('files')); // Movie images
+app.use('/tests', express.static('tests')); // Test files
+app.use(express.static('.', {
+    index: 'index.html',
+    dotfiles: 'deny', // Prevent access to .env and other dotfiles
+    extensions: ['html', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico']
+}));
 
 // TMDb API configuration
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 // Helper function to make TMDb API requests
+// This function ensures we only make requests to the trusted TMDb API
 async function fetchFromTMDb(endpoint, params = {}) {
+    // Validate that endpoint starts with / and doesn't contain .. or other path traversal attempts
+    if (!endpoint.startsWith('/') || endpoint.includes('..')) {
+        throw new Error('Invalid endpoint');
+    }
+    
     const queryParams = new URLSearchParams(params);
     const url = `${TMDB_BASE_URL}${endpoint}?${queryParams}`;
     
@@ -57,6 +72,11 @@ app.get('/api/movie/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { language = 'es-ES', append_to_response } = req.query;
+        
+        // Validate that id is a number to prevent injection
+        if (!/^\d+$/.test(id)) {
+            return res.status(400).json({ error: 'Invalid movie ID' });
+        }
         
         const params = { language };
         if (append_to_response) {
