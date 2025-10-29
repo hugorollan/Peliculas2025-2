@@ -1,7 +1,7 @@
 // MODELO DE DATOS
 
-    // API Key de TMDb
-    const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzOTgxNWVjZTI4ZjcyNWJlZGRmY2Y3OGE0YzRjZGU0ZiIsIm5iZiI6MTc2MDQ1NjUxNS4xNDcsInN1YiI6IjY4ZWU2ZjQzNDYzMzQ0Yjg0MTlkZjQ3MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ejdXz4pm0dZn0OAVJvJ16R8SwNAa-MBkO_yttUiblLk';
+    // API Base URL - now using our proxy server for security
+    const API_BASE_URL = '/api';
 
      let mis_peliculas_iniciales = [
          {titulo: "Superlópez",   director: "Javier Ruiz Caldera", año: "2018", miniatura: "files/superlopez.png"},
@@ -76,6 +76,97 @@
             i = i + 1;
         }
         return view;
+    }
+
+    // ========================================================================
+    // REFACTORED VERSION using HTML Templates and createElement
+    // This is an EXAMPLE implementation demonstrating best practices for DOM manipulation.
+    // It is NOT integrated into the main application to maintain backward compatibility.
+    // See DOM_REFACTORING_GUIDE.md for detailed explanation and integration instructions.
+    // ========================================================================
+    
+    const indexViewRefactored = (peliculas) => {
+        // Create a document fragment to batch DOM operations
+        const fragment = document.createDocumentFragment();
+        
+        if (peliculas.length === 0) {
+            // Clone the empty collection template
+            const emptyTemplate = document.getElementById('empty-collection-template');
+            const emptyMessage = emptyTemplate.content.cloneNode(true);
+            fragment.appendChild(emptyMessage);
+        } else {
+            // Get the movie card template
+            const movieTemplate = document.getElementById('movie-card-template');
+            
+            peliculas.forEach((pelicula, index) => {
+                // Clone the template
+                const movieCard = movieTemplate.content.cloneNode(true);
+                
+                // Get references to elements we need to populate
+                const movieDiv = movieCard.querySelector('.movie');
+                const img = movieCard.querySelector('img');
+                const title = movieCard.querySelector('.title');
+                const movieInfo = movieCard.querySelector('.movie-info');
+                const showBtn = movieCard.querySelector('.show');
+                const editBtn = movieCard.querySelector('.edit');
+                const deleteBtn = movieCard.querySelector('.delete');
+                
+                // Set image
+                img.src = pelicula.miniatura;
+                img.alt = pelicula.titulo || 'Sin título';
+                img.onerror = function() { this.src = 'files/placeholder.png'; };
+                
+                // Set title (safely using textContent to avoid XSS)
+                if (pelicula.titulo) {
+                    title.textContent = pelicula.titulo;
+                } else {
+                    const em = document.createElement('em');
+                    em.textContent = 'Sin título';
+                    title.appendChild(em);
+                }
+                
+                // Add rating badge if exists
+                if (pelicula.rating) {
+                    const ratingBadge = document.createElement('span');
+                    ratingBadge.className = 'info-badge badge-rating';
+                    const starIcon = document.createElement('i');
+                    starIcon.className = 'fas fa-star';
+                    ratingBadge.appendChild(starIcon);
+                    ratingBadge.appendChild(document.createTextNode(' ' + pelicula.rating.toFixed(1)));
+                    movieInfo.appendChild(ratingBadge);
+                }
+                
+                // Add year badge if exists
+                if (pelicula.año) {
+                    const yearBadge = document.createElement('span');
+                    yearBadge.className = 'info-badge badge-year';
+                    const calendarIcon = document.createElement('i');
+                    calendarIcon.className = 'fas fa-calendar';
+                    yearBadge.appendChild(calendarIcon);
+                    yearBadge.appendChild(document.createTextNode(' ' + pelicula.año));
+                    movieInfo.appendChild(yearBadge);
+                }
+                
+                // Add genre badge if exists
+                if (pelicula.generos && pelicula.generos.length > 0) {
+                    const genreBadge = document.createElement('span');
+                    genreBadge.className = 'info-badge badge-genre';
+                    genreBadge.textContent = pelicula.generos[0];
+                    movieInfo.appendChild(genreBadge);
+                }
+                
+                // Set button data attributes
+                showBtn.dataset.myId = index;
+                editBtn.dataset.myId = index;
+                deleteBtn.dataset.myId = index;
+                
+                // Add the populated card to the fragment
+                fragment.appendChild(movieCard);
+            });
+        }
+        
+        // Return the fragment (can be appended directly to DOM)
+        return fragment;
     }
 
     const editView = (i, pelicula) => {
@@ -565,16 +656,8 @@
             </div>
         `;
 
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                Authorization: `Bearer ${TMDB_API_KEY}`
-            }
-        };
-
         try {
-            const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}&language=es-ES`, options);
+            const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}&language=es-ES`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -597,14 +680,6 @@
 
     const searchWithSuggestionsContr = async (query) => {
         // Intentar obtener sugerencias buscando películas populares o términos similares
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                Authorization: `Bearer ${TMDB_API_KEY}`
-            }
-        };
-
         try {
             // Buscar con el primer par de palabras si hay espacios
             const words = query.split(' ');
@@ -615,7 +690,7 @@
                 for (let word of words) {
                     if (word.length > 2) { // Solo buscar palabras con más de 2 caracteres
                         try {
-                            const response = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(word)}&language=es-ES`, options);
+                            const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(word)}&language=es-ES`);
                             if (response.ok) {
                                 const data = await response.json();
                                 if (data.results && data.results.length > 0) {
@@ -638,7 +713,7 @@
             // Si aún no hay sugerencias, buscar películas populares
             if (suggestions.length === 0) {
                 try {
-                    const response = await fetch(`https://api.themoviedb.org/3/movie/popular?language=es-ES&page=1`, options);
+                    const response = await fetch(`${API_BASE_URL}/popular?language=es-ES&page=1`);
                     if (response.ok) {
                         const data = await response.json();
                         if (data.results) {
@@ -687,16 +762,8 @@
             let vote_count = movieData.vote_count || null;
 
             try {
-                const options = {
-                    method: 'GET',
-                    headers: {
-                        accept: 'application/json',
-                        Authorization: `Bearer ${TMDB_API_KEY}`
-                    }
-                };
-
                 // Obtener detalles completos de la película
-                const detailsRes = await fetch(`https://api.themoviedb.org/3/movie/${movieData.id}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+                const detailsRes = await fetch(`${API_BASE_URL}/movie/${movieData.id}?language=es-ES&append_to_response=credits,videos,reviews`);
                 if (detailsRes.ok) {
                     const detailsData = await detailsRes.json();
                     
@@ -868,16 +935,8 @@
         `;
         
         try {
-            const options = {
-                method: 'GET',
-                headers: {
-                    accept: 'application/json',
-                    Authorization: `Bearer ${TMDB_API_KEY}`
-                }
-            };
-            
             // Obtener detalles completos de la película
-            const response = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=es-ES&append_to_response=credits,videos,reviews`, options);
+            const response = await fetch(`${API_BASE_URL}/movie/${movieId}?language=es-ES&append_to_response=credits,videos,reviews`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
