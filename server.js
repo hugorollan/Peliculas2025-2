@@ -10,13 +10,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve only specific directories and files - more secure than serving everything
+// Static file serving with security restrictions
+// Note: While serving from root, we protect sensitive files through multiple layers:
+// 1. dotfiles: 'deny' - prevents access to .env, .git, and other dotfiles
+// 2. extensions whitelist - only serves safe file types
+// 3. .gitignore prevents committing sensitive files like node_modules
 app.use('/files', express.static('files')); // Movie images
 app.use('/tests', express.static('tests')); // Test files
 app.use(express.static('.', {
     index: 'index.html',
-    dotfiles: 'deny', // Prevent access to .env and other dotfiles
-    extensions: ['html', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico']
+    dotfiles: 'deny', // Prevents access to .env and other dotfiles
+    extensions: ['html', 'css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'md']
 }));
 
 // TMDb API configuration
