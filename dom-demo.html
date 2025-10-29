@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>DOM Refactoring Demo - Películas 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px solid #01b4e4;
+            border-radius: 12px;
+            background: #f9f9f9;
+        }
+        
+        .demo-section h2 {
+            color: #0d253f;
+            margin-top: 0;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .method {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .method h3 {
+            margin-top: 0;
+            color: #01b4e4;
+        }
+        
+        .metrics {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        
+        .movies-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        button.demo-btn {
+            margin: 10px 5px;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-code"></i> DOM Manipulation Refactoring Demo</h1>
+    
+    <div class="demo-section">
+        <h2><i class="fas fa-info-circle"></i> About This Demo</h2>
+        <p>This demo compares two approaches to rendering movie cards:</p>
+        <ul>
+            <li><strong>Old Method:</strong> Using innerHTML with string concatenation</li>
+            <li><strong>New Method:</strong> Using HTML templates and createElement</li>
+        </ul>
+        <p>Both render the same content, but the new method is faster, safer, and more maintainable.</p>
+    </div>
+    
+    <div class="demo-section">
+        <h2><i class="fas fa-stopwatch"></i> Performance Comparison</h2>
+        <button class="demo-btn" onclick="runComparison(10)">Test with 10 movies</button>
+        <button class="demo-btn" onclick="runComparison(50)">Test with 50 movies</button>
+        <button class="demo-btn" onclick="runComparison(100)">Test with 100 movies</button>
+        
+        <div class="comparison">
+            <div class="method">
+                <h3>Old Method (innerHTML)</h3>
+                <div class="metrics" id="old-metrics">Click a button to run test</div>
+                <div id="old-result" class="movies-container"></div>
+            </div>
+            
+            <div class="method">
+                <h3>New Method (template + createElement)</h3>
+                <div class="metrics" id="new-metrics">Click a button to run test</div>
+                <div id="new-result" class="movies-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Templates -->
+    <template id="movie-card-template">
+        <div class="movie">
+            <div class="movie-img">
+                <img src="" alt="Movie poster"/>
+            </div>
+            <div class="title"></div>
+            <div class="movie-info" style="text-align:center; font-size:11px; padding:0 12px; margin-bottom:10px;">
+            </div>
+            <div class="actions">
+                <button class="show"><i class="fas fa-eye"></i> ver</button>
+                <button class="edit"><i class="fas fa-edit"></i> editar</button>
+                <button class="delete"><i class="fas fa-trash"></i> borrar</button>
+            </div>
+        </div>
+    </template>
+    
+    <script>
+        // Sample movie data generator
+        function generateMovies(count) {
+            const titles = ['Matrix', 'Inception', 'Interstellar', 'Avatar', 'Titanic', 'Gladiator', 'The Godfather', 'Pulp Fiction'];
+            const directors = ['Nolan', 'Cameron', 'Tarantino', 'Spielberg', 'Scott', 'Coppola'];
+            const genres = ['Acción', 'Drama', 'Ciencia ficción', 'Aventura'];
+            
+            return Array.from({length: count}, (_, i) => ({
+                titulo: titles[i % titles.length] + ' ' + (i + 1),
+                director: directors[i % directors.length],
+                año: 1990 + (i % 35),
+                miniatura: 'files/placeholder.png',
+                rating: 5 + Math.random() * 5,
+                generos: [genres[i % genres.length]]
+            }));
+        }
+        
+        // OLD METHOD: Using innerHTML
+        function indexViewOld(peliculas) {
+            let view = "";
+            peliculas.forEach((p, i) => {
+                let genreBadge = p.generos && p.generos.length > 0 
+                    ? `<span class="info-badge badge-genre">${p.generos[0]}</span>` 
+                    : '';
+                
+                let ratingBadge = p.rating 
+                    ? `<span class="info-badge badge-rating"><i class="fas fa-star"></i> ${p.rating.toFixed(1)}</span>` 
+                    : '';
+                
+                view += `
+                <div class="movie">
+                    <div class="movie-img">
+                        <img src="${p.miniatura}" onerror="this.src='files/placeholder.png'"/>
+                    </div>
+                    <div class="title">${p.titulo}</div>
+                    <div style="text-align:center; font-size:11px; padding:0 12px; margin-bottom:10px;">
+                        ${ratingBadge}
+                        ${p.año ? `<span class="info-badge badge-year"><i class="fas fa-calendar"></i> ${p.año}</span>` : ""}
+                        ${genreBadge}
+                    </div>
+                    <div class="actions">
+                        <button class="show" data-my-id="${i}"><i class="fas fa-eye"></i> ver</button>
+                        <button class="edit" data-my-id="${i}"><i class="fas fa-edit"></i> editar</button>
+                        <button class="delete" data-my-id="${i}"><i class="fas fa-trash"></i> borrar</button>
+                    </div>
+                </div>`;
+            });
+            return view;
+        }
+        
+        // NEW METHOD: Using templates and createElement
+        function indexViewNew(peliculas) {
+            const fragment = document.createDocumentFragment();
+            const template = document.getElementById('movie-card-template');
+            
+            peliculas.forEach((pelicula, index) => {
+                const movieCard = template.content.cloneNode(true);
+                
+                const img = movieCard.querySelector('img');
+                const title = movieCard.querySelector('.title');
+                const movieInfo = movieCard.querySelector('.movie-info');
+                const showBtn = movieCard.querySelector('.show');
+                const editBtn = movieCard.querySelector('.edit');
+                const deleteBtn = movieCard.querySelector('.delete');
+                
+                img.src = pelicula.miniatura;
+                img.alt = pelicula.titulo;
+                img.onerror = function() { this.src = 'files/placeholder.png'; };
+                
+                title.textContent = pelicula.titulo;
+                
+                if (pelicula.rating) {
+                    const ratingBadge = document.createElement('span');
+                    ratingBadge.className = 'info-badge badge-rating';
+                    const starIcon = document.createElement('i');
+                    starIcon.className = 'fas fa-star';
+                    ratingBadge.appendChild(starIcon);
+                    ratingBadge.appendChild(document.createTextNode(' ' + pelicula.rating.toFixed(1)));
+                    movieInfo.appendChild(ratingBadge);
+                }
+                
+                if (pelicula.año) {
+                    const yearBadge = document.createElement('span');
+                    yearBadge.className = 'info-badge badge-year';
+                    const calendarIcon = document.createElement('i');
+                    calendarIcon.className = 'fas fa-calendar';
+                    yearBadge.appendChild(calendarIcon);
+                    yearBadge.appendChild(document.createTextNode(' ' + pelicula.año));
+                    movieInfo.appendChild(yearBadge);
+                }
+                
+                if (pelicula.generos && pelicula.generos.length > 0) {
+                    const genreBadge = document.createElement('span');
+                    genreBadge.className = 'info-badge badge-genre';
+                    genreBadge.textContent = pelicula.generos[0];
+                    movieInfo.appendChild(genreBadge);
+                }
+                
+                showBtn.dataset.myId = index;
+                editBtn.dataset.myId = index;
+                deleteBtn.dataset.myId = index;
+                
+                fragment.appendChild(movieCard);
+            });
+            
+            return fragment;
+        }
+        
+        // Run performance comparison
+        function runComparison(count) {
+            const movies = generateMovies(count);
+            
+            // Test OLD method
+            const oldStart = performance.now();
+            const oldHTML = indexViewOld(movies);
+            const oldResult = document.getElementById('old-result');
+            oldResult.innerHTML = oldHTML;
+            const oldEnd = performance.now();
+            const oldTime = (oldEnd - oldStart).toFixed(2);
+            
+            // Test NEW method
+            const newStart = performance.now();
+            const newFragment = indexViewNew(movies);
+            const newResult = document.getElementById('new-result');
+            newResult.innerHTML = '';
+            newResult.appendChild(newFragment);
+            const newEnd = performance.now();
+            const newTime = (newEnd - newStart).toFixed(2);
+            
+            // Show metrics
+            const speedup = (oldTime / newTime).toFixed(2);
+            document.getElementById('old-metrics').innerHTML = `
+                Time: ${oldTime}ms<br>
+                Movies rendered: ${count}
+            `;
+            document.getElementById('new-metrics').innerHTML = `
+                Time: ${newTime}ms<br>
+                Movies rendered: ${count}<br>
+                <strong style="color: #2e7d32;">⚡ ${speedup}x faster!</strong>
+            `;
+        }
+        
+        // Run initial comparison
+        window.onload = () => runComparison(10);
+    </script>
+</body>
+</html>

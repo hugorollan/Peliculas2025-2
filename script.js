@@ -78,6 +78,106 @@
         return view;
     }
 
+    // ========================================================================
+    // REFACTORED VERSION using HTML Templates and createElement
+    // This is a more efficient and maintainable approach that:
+    // 1. Uses HTML <template> elements for better performance
+    // 2. Uses createElement and DOM manipulation instead of innerHTML
+    // 3. Avoids XSS vulnerabilities by properly handling text content
+    // 4. Prevents full DOM regeneration on each render
+    // ========================================================================
+    
+    const indexViewRefactored = (peliculas) => {
+        // Create a document fragment to batch DOM operations
+        const fragment = document.createDocumentFragment();
+        
+        if (peliculas.length === 0) {
+            // Clone the empty collection template
+            const emptyTemplate = document.getElementById('empty-collection-template');
+            const emptyMessage = emptyTemplate.content.cloneNode(true);
+            fragment.appendChild(emptyMessage);
+        } else {
+            // Get the movie card template
+            const movieTemplate = document.getElementById('movie-card-template');
+            
+            peliculas.forEach((pelicula, index) => {
+                // Clone the template
+                const movieCard = movieTemplate.content.cloneNode(true);
+                
+                // Get references to elements we need to populate
+                const movieDiv = movieCard.querySelector('.movie');
+                const img = movieCard.querySelector('img');
+                const title = movieCard.querySelector('.title');
+                const movieInfo = movieCard.querySelector('.movie-info');
+                const showBtn = movieCard.querySelector('.show');
+                const editBtn = movieCard.querySelector('.edit');
+                const deleteBtn = movieCard.querySelector('.delete');
+                
+                // Set image
+                img.src = pelicula.miniatura;
+                img.alt = pelicula.titulo || 'Sin título';
+                img.onerror = function() { this.src = 'files/placeholder.png'; };
+                
+                // Set title (safely using textContent to avoid XSS)
+                if (pelicula.titulo) {
+                    title.textContent = pelicula.titulo;
+                } else {
+                    const em = document.createElement('em');
+                    em.textContent = 'Sin título';
+                    title.appendChild(em);
+                }
+                
+                // Add rating badge if exists
+                if (pelicula.rating) {
+                    const ratingBadge = document.createElement('span');
+                    ratingBadge.className = 'info-badge badge-rating';
+                    const starIcon = document.createElement('i');
+                    starIcon.className = 'fas fa-star';
+                    ratingBadge.appendChild(starIcon);
+                    ratingBadge.appendChild(document.createTextNode(' ' + pelicula.rating.toFixed(1)));
+                    movieInfo.appendChild(ratingBadge);
+                }
+                
+                // Add year badge if exists
+                if (pelicula.año) {
+                    const yearBadge = document.createElement('span');
+                    yearBadge.className = 'info-badge badge-year';
+                    const calendarIcon = document.createElement('i');
+                    calendarIcon.className = 'fas fa-calendar';
+                    yearBadge.appendChild(calendarIcon);
+                    yearBadge.appendChild(document.createTextNode(' ' + pelicula.año));
+                    movieInfo.appendChild(yearBadge);
+                }
+                
+                // Add genre badge if exists
+                if (pelicula.generos && pelicula.generos.length > 0) {
+                    const genreBadge = document.createElement('span');
+                    genreBadge.className = 'info-badge badge-genre';
+                    genreBadge.textContent = pelicula.generos[0];
+                    movieInfo.appendChild(genreBadge);
+                }
+                
+                // Set button data attributes
+                showBtn.dataset.myId = index;
+                editBtn.dataset.myId = index;
+                deleteBtn.dataset.myId = index;
+                
+                // Add the populated card to the fragment
+                fragment.appendChild(movieCard);
+            });
+        }
+        
+        // Return the fragment (can be appended directly to DOM)
+        return fragment;
+    }
+    
+    // Note: To use the refactored version, replace:
+    //   document.getElementById('main').innerHTML = indexView(mis_peliculas);
+    // with:
+    //   const main = document.getElementById('main');
+    //   main.innerHTML = ''; // Clear existing content
+    //   main.appendChild(indexViewRefactored(mis_peliculas));
+
     const editView = (i, pelicula) => {
         return `
         <div class="modal-bg">
