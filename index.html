@@ -14,7 +14,15 @@
         <button class="index"><i class="fas fa-home"></i> Inicio</button>
         <button class="new"><i class="fas fa-plus-circle"></i> Añadir película</button>
         <button class="search-view"><i class="fas fa-search"></i> Buscar película</button>
+        <button class="manage-lists"><i class="fas fa-list"></i> Mis Listas</button>
         <button class="reset"><i class="fas fa-trash-alt"></i> Resetear lista</button>
+        <div class="auth-section">
+            <button class="auth-login" style="display: none;"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>
+            <span class="user-info" style="display: none;">
+                <i class="fas fa-user"></i> <span class="username"></span>
+                <button class="auth-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+            </span>
+        </div>
     </nav>
     
     <!-- Templates for DOM manipulation -->
@@ -42,6 +50,169 @@
         </div>
     </template>
     
+    <!-- Template for edit modal -->
+    <template id="edit-modal-template">
+        <div class="modal-bg">
+            <div class="modal">
+                <h2><i class="fas fa-edit"></i> Editar Película</h2>
+                <div class="field">
+                    Título <br>
+                    <input type="text" id="titulo" placeholder="Título">
+                </div>
+                <div class="field">
+                    Director <br>
+                    <input type="text" id="director" placeholder="Director">
+                </div>
+                <div class="field">
+                    Año <br>
+                    <input type="text" id="año" placeholder="Año">
+                </div>
+                <div class="field">
+                    Miniatura <br>
+                    <input type="text" id="miniatura" placeholder="URL de la miniatura">
+                </div>
+                <div class="actions">
+                    <button class="update"><i class="fas fa-save"></i> Actualizar</button>
+                    <button class="index"><i class="fas fa-times"></i> Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for new movie modal -->
+    <template id="new-modal-template">
+        <div class="modal-bg">
+            <div class="modal">
+                <h2><i class="fas fa-plus-circle"></i> Crear Película</h2>
+                <div class="field">
+                    Título <br>
+                    <input type="text" id="titulo" placeholder="Título">
+                </div>
+                <div class="field">
+                    Director <br>
+                    <input type="text" id="director" placeholder="Director">
+                </div>
+                <div class="field">
+                    Año <br>
+                    <input type="text" id="año" placeholder="Año">
+                </div>
+                <div class="field">
+                    Miniatura <br>
+                    <input type="text" id="miniatura" placeholder="URL de la miniatura">
+                </div>
+                <div class="actions">
+                    <button class="create"><i class="fas fa-save"></i> Crear</button>
+                    <button class="index"><i class="fas fa-times"></i> Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for search modal -->
+    <template id="search-modal-template">
+        <div class="modal-bg">
+            <div class="modal">
+                <h2><i class="fas fa-search"></i> Buscar Película en TMDb</h2>
+                <div class="error-message" style="display: none;"></div>
+                <div class="field">
+                    Título de la película <br>
+                    <input type="text" id="search-query" placeholder="Ej: Inception, Matrix, Avatar...">
+                </div>
+                <div class="suggestions-container"></div>
+                <div class="actions">
+                    <button class="search"><i class="fas fa-search"></i> Buscar</button>
+                    <button class="index"><i class="fas fa-times"></i> Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for search result card -->
+    <template id="search-result-template">
+        <div class="movie">
+            <div class="movie-img">
+                <img src="" alt="Movie poster"/>
+            </div>
+            <div class="title"></div>
+            <div class="movie-info"></div>
+            <div class="actions">
+                <button class="consult-from-api"><i class="fas fa-info-circle"></i> Consultar</button>
+                <button class="add-from-api"><i class="fas fa-plus"></i> Añadir</button>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for authentication forms -->
+    <template id="auth-modal-template">
+        <div class="modal-bg">
+            <div class="modal">
+                <h2><i class="fas fa-user"></i> <span class="auth-title"></span></h2>
+                <form class="auth-form">
+                    <div class="auth-fields"></div>
+                    <div class="actions">
+                        <button type="submit" class="auth-submit"></button>
+                        <button type="button" class="auth-toggle"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for personal rating/notes modal -->
+    <template id="personal-data-template">
+        <div class="modal-bg">
+            <div class="modal">
+                <h2><i class="fas fa-star"></i> Datos Personales</h2>
+                <div class="field">
+                    <label>Tu Calificación (1-10)</label><br>
+                    <input type="number" id="personal-rating" min="0" max="10" step="0.1" placeholder="Ej: 8.5">
+                </div>
+                <div class="field">
+                    <label>Tus Notas</label><br>
+                    <textarea id="personal-notes" rows="4" placeholder="Escribe tus notas sobre esta película..."></textarea>
+                </div>
+                <div class="actions">
+                    <button class="save-personal"><i class="fas fa-save"></i> Guardar</button>
+                    <button class="index"><i class="fas fa-times"></i> Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for list management modal -->
+    <template id="lists-modal-template">
+        <div class="modal-bg">
+            <div class="modal" style="min-width: 600px;">
+                <h2><i class="fas fa-list"></i> Gestionar Listas</h2>
+                <div class="lists-container"></div>
+                <div class="field">
+                    <label>Nueva Lista</label><br>
+                    <input type="text" id="new-list-name" placeholder="Nombre de la lista">
+                    <input type="text" id="new-list-description" placeholder="Descripción (opcional)">
+                </div>
+                <div class="actions">
+                    <button class="create-list"><i class="fas fa-plus"></i> Crear Lista</button>
+                    <button class="index"><i class="fas fa-times"></i> Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <!-- Template for list item -->
+    <template id="list-item-template">
+        <div class="list-item">
+            <div class="list-info">
+                <div class="list-name"></div>
+                <div class="list-description"></div>
+                <div class="list-count"></div>
+            </div>
+            <div class="list-actions">
+                <button class="view-list"><i class="fas fa-eye"></i> Ver</button>
+                <button class="delete-list"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+        </div>
+    </template>
+    
     <div id="main"></div>
     <footer>
         <div class="footer-copyright">&copy; 2025 Hugo Rollán. Todos los derechos reservados.</div>
@@ -50,6 +221,6 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
