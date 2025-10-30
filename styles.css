@@ -868,3 +868,86 @@ footer {
     margin-bottom: 16px;
 }
 
+
+
+/* Personal data and lists styles */
+.manage-personal {
+}
+
+.manage-personal:hover {
+}
+
+.list-item {
+    background: #f9f9f9;
+    border-radius: var(--border-radius-sm);
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.list-item:hover {
+    background: #f0f0f0;
+    transform: translateX(5px);
+}
+
+.list-info {
+    flex: 1;
+}
+
+.list-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--tmdb-dark-blue);
+    margin-bottom: 4px;
+}
+
+.list-description {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.list-count {
+    font-size: 12px;
+    color: #888;
+}
+
+.list-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.list-actions button {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.view-list {
+    background: var(--tmdb-light-blue);
+}
+
+.delete-list {
+    background: #e74c3c;
+}
+
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius-sm);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--tmdb-light-blue);
+}
+
+input[type="number"] {
+    width: 100%;
+}

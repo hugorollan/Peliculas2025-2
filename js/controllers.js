@@ -380,3 +380,116 @@ export const logoutContr = () => {
         indexContr();
     }
 };
+
+// ============================================================================
+// PERSONAL DATA CONTROLLERS (Rating and Notes)
+// ============================================================================
+
+// Show personal data form
+export const managePersonalContr = (i) => {
+    views.render(views.personalDataView(mis_peliculas[i]));
+};
+
+// Save personal rating and notes
+export const savePersonalContr = async () => {
+    try {
+        const movieId = event.target.dataset.movieId;
+        const personalRating = parseFloat(document.getElementById('personal-rating').value) || null;
+        const personalNotes = document.getElementById('personal-notes').value || '';
+        
+        if (!movieId) {
+            // Fallback to localStorage update
+            // Find movie in array and update
+            const index = mis_peliculas.findIndex(p => p._id === movieId);
+            if (index >= 0) {
+                mis_peliculas[index].personalRating = personalRating;
+                mis_peliculas[index].personalNotes = personalNotes;
+                await legacyAPI.updateAPI(mis_peliculas);
+            }
+        }
+        
+        alert('Datos personales guardados correctamente');
+        indexContr();
+    } catch (error) {
+        console.error('Error saving personal data:', error);
+        alert('Error al guardar los datos personales');
+    }
+};
+
+// ============================================================================
+// LISTS CONTROLLERS
+// ============================================================================
+
+let userLists = [];
+
+// Show lists management view
+export const manageListsContr = async () => {
+    try {
+        // Try to get lists from API if user is logged in
+        if (authAPI.isLoggedIn()) {
+            // When backend is fully integrated, this will work
+            // For now, show empty state
+            userLists = [];
+        }
+        
+        views.render(views.listsManagementView(userLists));
+    } catch (error) {
+        console.error('Error loading lists:', error);
+        views.render(views.listsManagementView([]));
+    }
+};
+
+// Create new list
+export const createListContr = async () => {
+    try {
+        const name = document.getElementById('new-list-name').value.trim();
+        const description = document.getElementById('new-list-description').value.trim();
+        
+        if (!name) {
+            alert('Por favor, introduce un nombre para la lista');
+            return;
+        }
+        
+        // Create list (will work when backend is integrated)
+        // For now, just show message
+        alert('Funcionalidad de listas disponible cuando inicies sesión con el backend');
+        
+    } catch (error) {
+        console.error('Error creating list:', error);
+        alert('Error al crear la lista');
+    }
+};
+
+// View specific list
+export const viewListContr = async (listId) => {
+    try {
+        // Find list in userLists
+        const lista = userLists.find(l => l._id === listId);
+        
+        if (!lista) {
+            alert('Lista no encontrada');
+            return;
+        }
+        
+        views.render(views.listView(lista));
+    } catch (error) {
+        console.error('Error viewing list:', error);
+        alert('Error al cargar la lista');
+    }
+};
+
+// Delete list
+export const deleteListContr = async (listId) => {
+    try {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta lista?')) {
+            return;
+        }
+        
+        // Delete list (will work when backend is integrated)
+        alert('Funcionalidad de listas disponible cuando inicies sesión con el backend');
+        
+    } catch (error) {
+        console.error('Error deleting list:', error);
+        alert('Error al eliminar la lista');
+    }
+};

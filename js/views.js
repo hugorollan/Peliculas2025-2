@@ -554,6 +554,266 @@ export const updateAuthUI = (user) => {
     }
 };
 
+// PERSONAL DATA VIEW - Shows form for personal rating and notes
+export const personalDataView = (pelicula) => {
+    const template = document.getElementById('personal-data-template');
+    const modal = template.content.cloneNode(true);
+    
+    // Set current values if they exist
+    if (pelicula.personalRating) {
+        modal.querySelector('#personal-rating').value = pelicula.personalRating;
+    }
+    if (pelicula.personalNotes) {
+        modal.querySelector('#personal-notes').value = pelicula.personalNotes;
+    }
+    
+    // Set movie ID on save button
+    modal.querySelector('.save-personal').dataset.movieId = pelicula._id || '';
+    
+    return modal;
+};
+
+// LISTS MANAGEMENT VIEW - Shows all lists with ability to create/delete
+export const listsManagementView = (listas) => {
+    const template = document.getElementById('lists-modal-template');
+    const modal = template.content.cloneNode(true);
+    
+    const listsContainer = modal.querySelector('.lists-container');
+    
+    if (!listas || listas.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.style.textAlign = 'center';
+        emptyMsg.style.color = '#888';
+        emptyMsg.style.margin = '20px 0';
+        emptyMsg.textContent = 'No tienes listas creadas aún';
+        listsContainer.appendChild(emptyMsg);
+    } else {
+        const listItemTemplate = document.getElementById('list-item-template');
+        
+        listas.forEach(lista => {
+            const listItem = listItemTemplate.content.cloneNode(true);
+            
+            listItem.querySelector('.list-name').textContent = lista.name;
+            
+            if (lista.description) {
+                listItem.querySelector('.list-description').textContent = lista.description;
+            } else {
+                listItem.querySelector('.list-description').style.display = 'none';
+            }
+            
+            const movieCount = lista.movies ? lista.movies.length : 0;
+            listItem.querySelector('.list-count').textContent = `${movieCount} película${movieCount !== 1 ? 's' : ''}`;
+            
+            // Set list IDs on buttons
+            listItem.querySelector('.view-list').dataset.listId = lista._id;
+            listItem.querySelector('.delete-list').dataset.listId = lista._id;
+            
+            listsContainer.appendChild(listItem);
+        });
+    }
+    
+    return modal;
+};
+
+// LIST VIEW - Shows movies in a specific list
+export const listView = (lista) => {
+    const container = document.createElement('div');
+    container.style.width = '100%';
+    container.style.padding = '20px';
+    
+    const heading = document.createElement('h2');
+    heading.style.textAlign = 'center';
+    heading.style.color = 'var(--tmdb-dark-blue)';
+    heading.style.fontSize = '32px';
+    heading.style.marginBottom = '10px';
+    
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-list';
+    heading.appendChild(icon);
+    heading.appendChild(document.createTextNode(` ${lista.name}`));
+    
+    container.appendChild(heading);
+    
+    if (lista.description) {
+        const desc = document.createElement('p');
+        desc.style.textAlign = 'center';
+        desc.style.color = '#666';
+        desc.style.marginBottom = '30px';
+        desc.textContent = lista.description;
+        container.appendChild(desc);
+    }
+    
+    if (!lista.movies || lista.movies.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.color = '#888';
+        emptyDiv.style.margin = '40px 0';
+        emptyDiv.style.textAlign = 'center';
+        emptyDiv.style.fontSize = '18px';
+        emptyDiv.textContent = 'Esta lista está vacía';
+        container.appendChild(emptyDiv);
+    } else {
+        const moviesContainer = document.createElement('div');
+        moviesContainer.style.display = 'flex';
+        moviesContainer.style.flexWrap = 'wrap';
+        moviesContainer.style.gap = '24px';
+        moviesContainer.style.justifyContent = 'center';
+        
+        // Render movies using the same template as index view
+        lista.movies.forEach(movie => {
+            // Create a simple movie card
+            const movieCard = document.createElement('div');
+            movieCard.className = 'movie';
+            
+            const img = document.createElement('img');
+            img.src = movie.miniatura || 'files/placeholder.png';
+            img.alt = movie.titulo || 'Sin título';
+            img.onerror = function() { this.src = 'files/placeholder.png'; };
+            movieCard.appendChild(img);
+            
+            const title = document.createElement('div');
+            title.className = 'title';
+            title.textContent = movie.titulo || 'Sin título';
+            movieCard.appendChild(title);
+            
+            if (movie.rating || movie.año) {
+                const info = document.createElement('div');
+                info.style.textAlign = 'center';
+                info.style.fontSize = '11px';
+                info.style.padding = '0 12px';
+                info.style.marginBottom = '10px';
+                
+                if (movie.rating) {
+                    const badge = createBadge('rating', 'fas fa-star', movie.rating.toFixed(1));
+                    info.appendChild(badge);
+                }
+                
+                if (movie.año) {
+                    const badge = createBadge('year', 'fas fa-calendar', movie.año);
+                    info.appendChild(badge);
+                }
+                
+                movieCard.appendChild(info);
+            }
+            
+            moviesContainer.appendChild(movieCard);
+        });
+        
+        container.appendChild(moviesContainer);
+    }
+    
+    // Back button
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.textAlign = 'center';
+    buttonContainer.style.marginTop = '40px';
+    
+    const backBtn = document.createElement('button');
+    backBtn.className = 'manage-lists';
+    const backIcon = document.createElement('i');
+    backIcon.className = 'fas fa-arrow-left';
+    backBtn.appendChild(backIcon);
+    backBtn.appendChild(document.createTextNode(' Volver a Mis Listas'));
+    
+    buttonContainer.appendChild(backBtn);
+    container.appendChild(buttonContainer);
+    
+    return container;
+};
+
+// Enhanced index view with personal ratings and list management
+export const indexViewEnhanced = (peliculas, userLists = []) => {
+    const fragment = document.createDocumentFragment();
+    
+    if (peliculas.length === 0) {
+        const emptyTemplate = document.getElementById('empty-collection-template');
+        const emptyMessage = emptyTemplate.content.cloneNode(true);
+        fragment.appendChild(emptyMessage);
+    } else {
+        const movieTemplate = document.getElementById('movie-card-template');
+        
+        peliculas.forEach((pelicula, index) => {
+            const movieCard = movieTemplate.content.cloneNode(true);
+            
+            // Get references to elements
+            const img = movieCard.querySelector('img');
+            const title = movieCard.querySelector('.title');
+            const movieInfo = movieCard.querySelector('.movie-info');
+            const actionsDiv = movieCard.querySelector('.actions');
+            const showBtn = movieCard.querySelector('.show');
+            const editBtn = movieCard.querySelector('.edit');
+            const deleteBtn = movieCard.querySelector('.delete');
+            
+            // Set image
+            img.src = pelicula.miniatura;
+            img.alt = pelicula.titulo || 'Sin título';
+            img.onerror = function() { this.src = 'files/placeholder.png'; };
+            
+            // Set title safely
+            if (pelicula.titulo) {
+                title.textContent = pelicula.titulo;
+            } else {
+                const em = document.createElement('em');
+                em.textContent = 'Sin título';
+                title.appendChild(em);
+            }
+            
+            // Add personal rating badge if exists (prioritize over TMDb rating)
+            if (pelicula.personalRating) {
+                const badge = createBadge('rating', 'fas fa-heart', pelicula.personalRating.toFixed(1));
+                badge.style.background = '#ff6b9d';
+                badge.title = 'Tu calificación personal';
+                movieInfo.appendChild(badge);
+            } else if (pelicula.rating) {
+                const badge = createBadge('rating', 'fas fa-star', pelicula.rating.toFixed(1));
+                movieInfo.appendChild(badge);
+            }
+            
+            // Add year badge if exists
+            if (pelicula.año) {
+                const badge = createBadge('year', 'fas fa-calendar', pelicula.año);
+                movieInfo.appendChild(badge);
+            }
+            
+            // Add genre badge if exists
+            if (pelicula.generos && pelicula.generos.length > 0) {
+                const badge = createBadge('genre', null, pelicula.generos[0]);
+                movieInfo.appendChild(badge);
+            }
+            
+            // Add personal notes indicator if exists
+            if (pelicula.personalNotes) {
+                const notesBadge = document.createElement('span');
+                notesBadge.className = 'info-badge';
+                notesBadge.style.background = '#ffc107';
+                notesBadge.style.cursor = 'pointer';
+                notesBadge.title = 'Tienes notas personales';
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-sticky-note';
+                notesBadge.appendChild(icon);
+                movieInfo.appendChild(notesBadge);
+            }
+            
+            // Add button for managing personal data
+            const personalBtn = document.createElement('button');
+            personalBtn.className = 'manage-personal';
+            personalBtn.dataset.myId = index;
+            const heartIcon = document.createElement('i');
+            heartIcon.className = 'fas fa-heart';
+            personalBtn.appendChild(heartIcon);
+            personalBtn.appendChild(document.createTextNode(' personal'));
+            actionsDiv.insertBefore(personalBtn, actionsDiv.firstChild);
+            
+            // Set button data attributes
+            showBtn.dataset.myId = index;
+            editBtn.dataset.myId = index;
+            deleteBtn.dataset.myId = index;
+            
+            fragment.appendChild(movieCard);
+        });
+    }
+    
+    return fragment;
+};
+
 // Render a view to the main element
 export const render = (viewElement) => {
     const main = getMainElement();

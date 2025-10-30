@@ -61,6 +61,26 @@ const router = (ev) => {
     else if (target.classList.contains('auth-toggle')) {
         controllers.authToggleContr(ev);
     }
+    // Personal data buttons
+    else if (target.classList.contains('manage-personal')) {
+        controllers.managePersonalContr(parseInt(target.dataset.myId));
+    }
+    else if (target.classList.contains('save-personal')) {
+        controllers.savePersonalContr();
+    }
+    // Lists management buttons
+    else if (target.classList.contains('manage-lists')) {
+        controllers.manageListsContr();
+    }
+    else if (target.classList.contains('create-list')) {
+        controllers.createListContr();
+    }
+    else if (target.classList.contains('view-list')) {
+        controllers.viewListContr(target.dataset.listId);
+    }
+    else if (target.classList.contains('delete-list')) {
+        controllers.deleteListContr(target.dataset.listId);
+    }
     // Check if target is inside a button (e.g., icon inside button)
     else if (target.parentElement && target.parentElement.tagName === 'BUTTON') {
         // Trigger click on parent button
