@@ -803,3 +803,68 @@ footer {
     opacity: 0.9;
     font-weight: 500;
 }
+
+/* Authentication Styles */
+.auth-section {
+    display: inline-block;
+    margin-left: auto;
+}
+
+.auth-login, .auth-logout {
+    background: var(--tmdb-light-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.auth-login:hover, .auth-logout:hover {
+    background: var(--tmdb-hover);
+    transform: translateY(-2px);
+}
+
+.user-info {
+    color: var(--tmdb-text);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-info .username {
+    color: var(--tmdb-light-blue);
+}
+
+.auth-form {
+    width: 100%;
+}
+
+.auth-toggle {
+    background: transparent;
+    color: var(--tmdb-light-blue);
+    border: 1px solid var(--tmdb-light-blue);
+}
+
+.auth-toggle:hover {
+    background: var(--tmdb-light-blue);
+    color: white;
+}
+
+/* Empty collection styles */
+.empty-collection {
+    color: #888;
+    margin: 40px 0;
+    text-align: center;
+    font-size: 18px;
+}
+
+.empty-collection i {
+    font-size: 48px;
+    color: #ccc;
+    display: block;
+    margin-bottom: 16px;
+}
+
