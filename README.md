@@ -1,313 +1,500 @@
-# 🎬 Películas 2025 - Gestor de Películas Favoritas
+# 🎬 Películas 2025 - Full-Stack Movie Manager
 
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/es/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/es/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/es/docs/Web/JavaScript)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![TMDb API](https://img.shields.io/badge/TMDb-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)](https://www.themoviedb.org/)
 
-Una aplicación web moderna y elegante para gestionar tu colección personal de películas favoritas, con integración completa de la API de The Movie Database (TMDb).
+Una aplicación web full-stack moderna y segura para gestionar tu colección personal de películas, con autenticación de usuarios, base de datos MongoDB, y características avanzadas como calificaciones personales y listas múltiples.
+
+## 🆕 **Nueva Versión Full-Stack**
+
+Esta aplicación ha sido completamente transformada de una simple app de página única a una aplicación full-stack robusta con:
+
+- 🔐 **Autenticación JWT** - Sistema seguro de registro e inicio de sesión
+- 💾 **MongoDB** - Persistencia de datos en base de datos
+- 👥 **Multi-usuario** - Cada usuario tiene su propia colección
+- ⭐ **Calificaciones Personales** - Añade tus propias calificaciones 1-10
+- 📝 **Notas Personales** - Escribe notas sobre cada película
+- 📋 **Listas Múltiples** - Organiza películas en listas personalizadas
+- 🛡️ **Seguridad** - Prevención XSS, hashing de contraseñas, rutas protegidas
 
 ## ✨ Características Principales
 
-- 🔍 **Búsqueda de Películas**: Busca películas directamente desde TMDb con resultados en tiempo real
-- ➕ **Gestión Completa**: Añade, edita, visualiza y elimina películas de tu colección
-- 💾 **Persistencia Local**: Almacenamiento automático en localStorage del navegador
-- 🎨 **Diseño Moderno**: Interfaz inspirada en TMDb con animaciones y transiciones fluidas
-- 📱 **Responsive**: Diseño adaptable a dispositivos móviles, tablets y escritorio
-- ⭐ **Información Detallada**: Visualiza puntuaciones, géneros, reparto y sinopsis de películas
-- 🎬 **Visualización de Trailers**: Trailers de YouTube embebidos directamente en la aplicación
-- ⏱️ **Duración de Películas**: Muestra la duración en formato horas y minutos
-- 📝 **Reseñas de Usuarios**: Lee opiniones de otros usuarios desde TMDb
-- 💰 **Datos Financieros**: Presupuesto y recaudación de taquilla de cada película
-- 🖼️ **Imágenes de Calidad**: Posters de alta resolución desde TMDb con fallback a placeholders
-- ♿ **Accesible**: Código semántico y buenas prácticas de accesibilidad
+### Gestión de Usuarios
+- 🔐 **Registro y Login**: Sistema completo de autenticación con JWT
+- 🔒 **Contraseñas Seguras**: Hashing con bcrypt (10 rounds)
+- 👤 **Perfiles de Usuario**: Cada usuario tiene su espacio privado
+- 🚪 **Cierre de Sesión**: Gestión segura de sesiones
 
-## 🚀 Demo en Vivo
+### Gestión de Películas
+- 🔍 **Búsqueda TMDb**: Busca millones de películas desde The Movie Database
+- ➕ **CRUD Completo**: Crea, lee, actualiza y elimina películas
+- 📊 **Información Rica**: Géneros, cast, trailers, reviews, presupuesto, recaudación
+- 🖼️ **Posters HD**: Imágenes de alta calidad con fallbacks
 
-![Películas 2025 - Vista Principal](https://via.placeholder.com/800x450/032541/FFFFFF?text=Peliculas+2025)
+### Personalización Avanzada
+- ⭐ **Tu Calificación**: Añade tus propias calificaciones (1-10) independientes de TMDb
+- 📝 **Tus Notas**: Escribe notas personales sobre cada película
+- 💖 **Indicadores Visuales**: Iconos especiales para datos personales (corazón para ratings, nota para notas)
+- 🎨 **Diferenciación Clara**: Datos personales vs. datos de TMDb claramente distinguidos
 
-*Interfaz principal mostrando la colección de películas*
+### Listas Personalizadas
+- 📋 **Múltiples Listas**: Crea todas las listas que quieras
+- 🏷️ **Organización**: "Favoritas", "Por Ver", "Vistas", etc.
+- 🔄 **Gestión Flexible**: Añade películas a múltiples listas
+- 👁️ **Vista de Listas**: Navega y visualiza el contenido de cada lista
+
+### Tecnología y Arquitectura
+- 🏗️ **Arquitectura MVC**: Código modular y mantenible con ES6 modules
+- 🛡️ **Seguridad**: Prevención XSS, validación de datos, JWT, bcrypt
+- 📱 **Responsive**: Diseño adaptable a todos los dispositivos
+- ⚡ **Rendimiento**: Manipulación eficiente del DOM con templates
+- 🎨 **UI Moderna**: Interfaz inspirada en TMDb con animaciones fluidas
 
 ## 📋 Tabla de Contenidos
 
 - [Instalación](#-instalación)
+- [Configuración](#-configuración)
 - [Uso](#-uso)
-- [Funcionalidades](#-funcionalidades-detalladas)
+- [Arquitectura](#-arquitectura)
+- [API Documentation](#-api-documentation)
+- [Seguridad](#-seguridad)
 - [Tecnologías](#-tecnologías-utilizadas)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
-- [API de TMDb](#-integración-con-tmdb-api)
 - [Contribuir](#-contribuir)
-- [Licencia](#-licencia)
-- [Autor](#-autor)
 
 ## 💻 Instalación
 
 ### Requisitos Previos
 
-- Un navegador web moderno (Chrome, Firefox, Safari, Edge)
-- Conexión a Internet (para búsqueda de películas en TMDb)
+- **Node.js** (v14 o superior)
+- **MongoDB** (local o MongoDB Atlas)
+- **TMDb API Key** (gratuita en https://www.themoviedb.org/settings/api)
+- Navegador web moderno
 
 ### Pasos de Instalación
 
 1. **Clonar el repositorio**
    ```bash
-   git clone https://github.com/hugorollan/Peliculas2025-2.git
-   cd Peliculas2025-2
+   git clone https://github.com/hugorollan/Quinto-Proyecto-Mejorando-nuestro-Netflix.git
+   cd Quinto-Proyecto-Mejorando-nuestro-Netflix
    ```
 
-2. **Abrir la aplicación**
-   - Abre el archivo `index.html` directamente en tu navegador
-   - O usa un servidor local:
-     ```bash
-     # Con Python 3
-     python -m http.server 8000
-     
-     # Con Node.js (http-server)
-     npx http-server
-     ```
-   - Accede a `http://localhost:8000`
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-3. **¡Listo para usar!**
-   No se requiere instalación de dependencias ni configuración adicional.
+3. **Configurar variables de entorno**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edita `.env` con tus valores:
+   ```env
+   TMDB_API_KEY=tu_clave_de_tmdb
+   MONGODB_URI=mongodb://localhost:27017/peliculas2025
+   JWT_SECRET=tu_clave_secreta_aleatoria
+   JWT_EXPIRES_IN=7d
+   PORT=3000
+   ```
+
+4. **Iniciar MongoDB** (si usas MongoDB local)
+   ```bash
+   mongod
+   ```
+
+5. **Iniciar el servidor**
+   ```bash
+   npm start
+   ```
+
+6. **Abrir en el navegador**
+   ```
+   http://localhost:3000
+   ```
+
+## ⚙️ Configuración
+
+### Obtener TMDb API Key
+
+1. Regístrate en https://www.themoviedb.org/
+2. Ve a Configuración → API
+3. Solicita una API Key (gratis)
+4. Copia el "Bearer Token" (no la API Key v3)
+5. Pégalo en `.env` como `TMDB_API_KEY`
+
+### Configurar MongoDB
+
+**Opción 1: MongoDB Local**
+```env
+MONGODB_URI=mongodb://localhost:27017/peliculas2025
+```
+
+**Opción 2: MongoDB Atlas (Cloud)**
+```env
+MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/peliculas2025
+```
+
+### Generar JWT Secret Seguro
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Copia el resultado a `JWT_SECRET` en `.env`
 
 ## 🎯 Uso
 
-### Vista Principal
+### Primera Vez
 
-Al abrir la aplicación, verás tu colección de películas con las siguientes opciones:
+1. **Registrarse**
+   - Haz clic en "Iniciar sesión" en la navegación
+   - Selecciona "¿No tienes cuenta? Regístrate"
+   - Completa el formulario (usuario, email, contraseña)
+   
+2. **Iniciar Sesión**
+   - Usa tu email y contraseña
+   - Recibirás un token JWT válido por 7 días
 
-- **Ver**: Muestra información detallada de la película (director, año, puntuación, géneros, reparto)
-- **Editar**: Modifica los datos de una película existente
-- **Borrar**: Elimina una película de tu colección
+### Gestionar Películas
 
-### Añadir Películas Manualmente
+**Añadir desde TMDb:**
+1. Clic en "Buscar película"
+2. Escribe el título
+3. Explora resultados
+4. Clic en "Añadir" en la película deseada
 
-1. Haz clic en el botón **"Añadir película"** en la barra de navegación
-2. Rellena el formulario con:
-   - Título de la película
-   - Director
-   - Año de estreno
-   - URL de la miniatura (imagen del póster)
-3. Haz clic en **"Crear"**
+**Añadir Manualmente:**
+1. Clic en "Añadir película"
+2. Completa el formulario (título, director, año, miniatura)
+3. Clic en "Crear"
 
-### Buscar Películas en TMDb
+**Ver Detalles:**
+- Clic en "ver" en cualquier película
+- Se muestran todos los detalles (cast, trailer, reviews, etc.)
 
-1. Haz clic en el botón **"Buscar película"** en la barra de navegación
-2. Escribe el título de la película que deseas buscar
-3. Presiona **Enter** o haz clic en **"Buscar"**
-4. Explora los resultados y haz clic en **"Añadir"** en la película deseada
-5. La película se añadirá automáticamente a tu colección con toda su información
+**Editar:**
+- Clic en "editar"
+- Modifica los campos deseados
+- Clic en "Actualizar"
 
-### Resetear Lista
+**Eliminar:**
+- Clic en "borrar"
+- Confirma la eliminación
 
-El botón **"Resetear lista"** restaura la colección a las 3 películas iniciales predeterminadas.
+### Datos Personales
 
-## 🛠️ Funcionalidades Detalladas
+**Añadir Tu Calificación y Notas:**
+1. Clic en el botón "💖 personal" en cualquier película
+2. Introduce tu calificación (0-10)
+3. Escribe tus notas
+4. Clic en "Guardar"
 
-### Gestión de Películas (CRUD)
+**Ver Datos Personales:**
+- Películas con calificación personal muestran un corazón 💖
+- Películas con notas muestran un ícono de nota 📝
+- Tu calificación aparece en lugar de la de TMDb
 
-- **Create (Crear)**: Añade películas manualmente o desde TMDb
-- **Read (Leer)**: Visualiza toda tu colección en formato de tarjetas
-- **Update (Actualizar)**: Edita cualquier información de tus películas
-- **Delete (Eliminar)**: Borra películas que ya no quieres en tu colección
+### Gestionar Listas
 
-### Búsqueda Inteligente
+**Crear Lista:**
+1. Clic en "Mis Listas"
+2. Escribe nombre y descripción (opcional)
+3. Clic en "Crear Lista"
 
-La integración con TMDb API permite:
-- Búsqueda en tiempo real de millones de películas
-- Resultados en español (idioma configurable)
-- Detección automática de duplicados
-- Información completa: título, año, puntuación, póster, géneros, sinopsis y reparto
-- **Trailers embebidos de YouTube**
-- **Duración de la película**
-- **Reseñas de usuarios con calificaciones**
-- **Presupuesto y recaudación de taquilla**
-- **Tagline/eslogan de la película**
+**Ver Lista:**
+- Clic en "Ver" en cualquier lista
+- Se muestran todas las películas de esa lista
 
-### Persistencia de Datos
+**Añadir Película a Lista:**
+- (Funcionalidad disponible al estar logueado con backend activo)
 
-- Los datos se guardan automáticamente en **localStorage**
-- No se pierde información al cerrar el navegador
-- Funciona completamente offline (excepto búsqueda de películas)
+**Eliminar Lista:**
+- Clic en "Eliminar" en cualquier lista
+- Confirma la eliminación
 
-### Interfaz de Usuario
+## 🏗️ Arquitectura
 
-- **Diseño inspirado en TMDb**: Colores y estética profesional
-- **Animaciones suaves**: Transiciones al pasar el ratón, fadeIn, slideUp
-- **Modales elegantes**: Para formularios y detalles de películas
-- **Tarjetas interactivas**: Con efectos hover y sombras dinámicas
-- **Responsive Design**: Se adapta a cualquier tamaño de pantalla
+### Patrón MVC con ES6 Modules
+
+```
+Frontend (Client)
+├── js/main.js        # Punto de entrada, event routing
+├── js/model.js       # Capa de datos, API calls
+├── js/views.js       # Renderizado DOM, templates
+└── js/controllers.js # Lógica de negocio
+
+Backend (Server)
+├── server.js         # Express server, routes
+├── models/           # Mongoose schemas
+│   ├── User.js       # Usuario (auth)
+│   ├── Pelicula.js   # Película
+│   └── Lista.js      # Lista
+└── middleware/
+    └── auth.js       # JWT validation
+```
+
+### Flujo de Datos
+
+```
+Usuario → Vista → Controlador → Modelo → API/DB
+                                            ↓
+Usuario ← Vista ← Controlador ← Modelo ← Respuesta
+```
+
+### Seguridad
+
+1. **Frontend**: Todas las vistas usan `textContent` y templates (no innerHTML)
+2. **Backend**: Validación de entrada, JWT, bcrypt, rutas protegidas
+3. **Base de Datos**: Mongoose schemas, validación, índices
+4. **Red**: CORS configurado, HTTPS recomendado en producción
+
+## 📚 API Documentation
+
+Para documentación completa de la API, ver [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+
+### Endpoints Principales
+
+**Autenticación:**
+- `POST /api/auth/register` - Registrar usuario
+- `POST /api/auth/login` - Iniciar sesión
+
+**Películas (Protegido - Requiere JWT):**
+- `GET /api/peliculas` - Obtener todas las películas del usuario
+- `POST /api/peliculas` - Crear película
+- `PUT /api/peliculas/:id` - Actualizar película
+- `DELETE /api/peliculas/:id` - Eliminar película
+- `PATCH /api/peliculas/:id/personal` - Actualizar datos personales
+
+**Listas (Protegido - Requiere JWT):**
+- `GET /api/listas` - Obtener todas las listas del usuario
+- `POST /api/listas` - Crear lista
+- `DELETE /api/listas/:id` - Eliminar lista
+- `POST /api/listas/:id/peliculas` - Añadir película a lista
+- `DELETE /api/listas/:id/peliculas/:movieId` - Quitar película de lista
+
+**TMDb Proxy (Público):**
+- `GET /api/search?query=...` - Buscar películas
+- `GET /api/movie/:id` - Detalles de película
+
+## 🛡️ Seguridad
+
+Ver [SECURITY.md](./SECURITY.md) para análisis completo de seguridad.
+
+### Medidas Implementadas
+
+✅ **Autenticación y Autorización**
+- JWT tokens con expiración configurable
+- Bcrypt hashing de contraseñas (10 rounds)
+- Rutas protegidas requieren token válido
+- Aislamiento de datos por usuario
+
+✅ **Prevención XSS**
+- Manipulación segura del DOM (templates + textContent)
+- No innerHTML con datos de usuario
+- Atributos HTML escapados automáticamente
+
+✅ **Validación de Entrada**
+- Validación en schemas de Mongoose
+- Validación de email, longitud de contraseña
+- Sanitización de datos
+
+✅ **Protección de Datos**
+- Contraseñas hasheadas antes de almacenar
+- JWT secrets configurables vía env
+- .env excluido de git
+- Dotfiles protegidos de acceso web
+
+⚠️ **Pendiente para Producción**
+- Rate limiting (límite de peticiones)
+- HTTPS (usar reverse proxy)
+- Security headers (helmet middleware)
 
 ## 🔧 Tecnologías Utilizadas
 
 ### Frontend
-
 | Tecnología | Uso |
 |-----------|-----|
-| **HTML5** | Estructura semántica de la aplicación |
-| **CSS3** | Estilos modernos con variables CSS, flexbox, grid y animaciones |
-| **JavaScript ES6+** | Lógica de aplicación con async/await, fetch API, arrow functions |
+| **HTML5** | Estructura y templates |
+| **CSS3** | Estilos modernos, animaciones, responsive |
+| **JavaScript ES6+** | Lógica, modules, async/await |
+| **Fetch API** | Comunicación con backend |
+
+### Backend
+| Tecnología | Versión | Uso |
+|-----------|---------|-----|
+| **Node.js** | 14+ | Runtime JavaScript |
+| **Express** | 5.x | Framework web |
+| **MongoDB** | 4.x+ | Base de datos NoSQL |
+| **Mongoose** | 8.x | ODM para MongoDB |
+| **JWT** | 9.x | Autenticación basada en tokens |
+| **Bcrypt** | 2.x | Hashing de contraseñas |
+| **dotenv** | 17.x | Variables de entorno |
+| **CORS** | 2.x | Control de acceso cross-origin |
 
 ### APIs Externas
-
-| API | Propósito |
-|-----|-----------|
-| **TMDb API** | Búsqueda de películas, información detallada, imágenes |
-| **localStorage** | Persistencia de datos del lado del cliente |
-
-### Patrón de Arquitectura
-
-- **MVC (Model-View-Controller)**: Separación clara de responsabilidades
-  - **Modelo**: Gestión de datos (`mis_peliculas`, API calls)
-  - **Vista**: Funciones de renderizado (`indexView`, `showView`, `editView`, etc.)
-  - **Controlador**: Lógica de negocio y eventos (`indexContr`, `searchContr`, etc.)
+- **TMDb API** - The Movie Database para datos de películas
 
 ## 📁 Estructura del Proyecto
 
 ```
-Peliculas2025-2/
+Quinto-Proyecto-Mejorando-nuestro-Netflix/
 │
-├── index.html              # Página principal de la aplicación
-├── script.js               # Lógica JavaScript (MVC)
-├── styles.css              # Estilos adicionales (modo oscuro)
-├── README.md               # Este archivo
-├── IMPLEMENTATION.md       # Documentación técnica de implementación
-├── SUMMARY.md              # Resumen de características
-├── TEST_VERIFICATION.html  # Página de verificación de tests
+├── index.html                # Página principal con templates
+├── styles.css                # Estilos CSS
 │
-├── files/                  # Recursos estáticos
-│   ├── placeholder.png     # Imagen por defecto
-│   ├── superlopez.png      # Poster de película
-│   ├── jurassicpark.png    # Poster de película
-│   └── interstellar.png    # Poster de película
+├── js/                       # Módulos ES6 del frontend
+│   ├── main.js               # Punto de entrada, event routing
+│   ├── model.js              # Capa de datos y API calls
+│   ├── views.js              # Renderizado de vistas
+│   └── controllers.js        # Lógica de negocio
 │
-└── tests/                  # Tests automatizados
-    ├── checks.js           # Tests de funcionalidad
-    └── testutils.js        # Utilidades de testing
+├── server.js                 # Servidor Express + rutas API
+│
+├── models/                   # Modelos Mongoose
+│   ├── User.js               # Esquema de usuario
+│   ├── Pelicula.js           # Esquema de película
+│   └── Lista.js              # Esquema de lista
+│
+├── middleware/               # Middleware de Express
+│   └── auth.js               # Validación JWT
+│
+├── files/                    # Recursos estáticos
+│   ├── placeholder.png       # Imagen por defecto
+│   ├── superlopez.png        # Posters de ejemplo
+│   ├── jurassicpark.png
+│   └── interstellar.png
+│
+├── tests/                    # Tests (legacy)
+│
+├── .env.example              # Plantilla de variables de entorno
+├── .gitignore                # Archivos ignorados por git
+├── package.json              # Dependencias y scripts
+├── README.md                 # Este archivo
+├── API_DOCUMENTATION.md      # Documentación completa de API
+├── SECURITY.md               # Análisis de seguridad
+└── DEPLOYMENT.md             # Guía de despliegue
 ```
-
-## 🎬 Integración con TMDb API
-
-### Configuración
-
-La aplicación utiliza un Bearer Token para autenticación con TMDb:
-
-```javascript
-const TMDB_API_KEY = 'tu_token_aqui';
-```
-
-### Endpoints Utilizados
-
-1. **Búsqueda de Películas**
-   ```
-   GET https://api.themoviedb.org/3/search/movie
-   Parámetros: query, language=es-ES
-   ```
-
-2. **Detalles Extendidos de Película**
-   ```
-   GET https://api.themoviedb.org/3/movie/{id}
-   Parámetros: language=es-ES, append_to_response=credits,videos,reviews
-   ```
-   
-   Este endpoint proporciona:
-   - `runtime`: Duración de la película
-   - `budget`: Presupuesto
-   - `revenue`: Recaudación
-   - `tagline`: Eslogan/tagline
-   - `credits`: Director y reparto
-   - `videos`: Trailers y videos
-   - `reviews`: Reseñas de usuarios
-
-3. **Imágenes**
-   ```
-   https://image.tmdb.org/t/p/w500/{poster_path}
-   https://image.tmdb.org/t/p/w185/{profile_path}
-   ```
-
-### Manejo de Errores
-
-- ✅ Validación de búsquedas vacías
-- ✅ Manejo de errores de red con mensajes amigables
-- ✅ Detección automática de películas duplicadas
-- ✅ Fallback a imágenes placeholder si no hay póster
-- ✅ Logging en consola para debugging
-
-## 🎨 Características de Diseño
-
-### Paleta de Colores (Inspirada en TMDb)
-
-```css
---tmdb-dark-blue: #032541    /* Azul oscuro principal */
---tmdb-light-blue: #01b4e4   /* Azul claro para botones */
---tmdb-light-green: #90cea1  /* Verde claro para acentos */
---tmdb-yellow: #ffc107       /* Amarillo para destacados */
---tmdb-bg: #f7fafd           /* Fondo claro */
-```
-
-### Animaciones
-
-- **fadeIn**: Aparición gradual de elementos
-- **slideUp**: Deslizamiento hacia arriba de modales
-- **hover effects**: Elevación de tarjetas y cambios de color
-- **loading states**: Feedback visual durante operaciones asíncronas
 
 ## 🧪 Testing
 
-La aplicación incluye tests automatizados en el directorio `tests/`:
+### Tests Automáticos
 
 ```bash
-# Los tests verifican:
-- Creación de películas
-- Edición de películas
-- Eliminación de películas
-- Navegación entre vistas
-- Persistencia en localStorage
+npm test
 ```
+
+### Tests Manuales
+
+1. **Registro y Login**
+   - Registrar nuevo usuario
+   - Intentar registro con email existente (debe fallar)
+   - Login con credenciales correctas
+   - Login con credenciales incorrectas (debe fallar)
+
+2. **CRUD de Películas**
+   - Crear película manualmente
+   - Editar película
+   - Eliminar película
+   - Añadir desde TMDb
+
+3. **Datos Personales**
+   - Añadir calificación personal
+   - Añadir notas
+   - Verificar indicadores visuales
+
+4. **Listas**
+   - Crear lista nueva
+   - Ver contenido de lista
+   - Eliminar lista
+
+### Tests de API con cURL
+
+Ver ejemplos en [API_DOCUMENTATION.md](./API_DOCUMENTATION.md#testing-with-curl)
+
+## 🚀 Despliegue
+
+### Desarrollo
+
+```bash
+npm start
+```
+
+### Producción
+
+Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para guía completa de despliegue.
+
+**Checklist rápido:**
+1. Configurar MongoDB Atlas
+2. Configurar variables de entorno de producción
+3. Añadir rate limiting
+4. Configurar HTTPS
+5. Añadir security headers (helmet)
+6. Configurar CORS para dominio específico
+7. Desplegar en Heroku/Render/Railway/DigitalOcean
 
 ## 🤝 Contribuir
 
 Las contribuciones son bienvenidas. Para contribuir:
 
-1. **Fork** el proyecto
-2. Crea una **rama** para tu feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un **Pull Request**
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ### Guía de Estilo
 
-- Usa JavaScript ES6+ moderno
+- Usa ES6+ moderno
 - Sigue el patrón MVC existente
+- Usa safe DOM manipulation (no innerHTML con datos de usuario)
 - Añade comentarios para código complejo
-- Mantén la consistencia con el estilo actual
-- Prueba tu código antes de hacer commit
+- Valida seguridad de nuevos endpoints
+- Actualiza tests si es necesario
 
 ## 📄 Licencia
 
-Este proyecto es de código abierto y está disponible bajo la [Licencia MIT](LICENSE).
+Este proyecto es de código abierto y está disponible bajo la Licencia MIT.
 
 ## 👨‍💻 Autor
 
 **Hugo Rollán**
 
 - GitHub: [@hugorollan](https://github.com/hugorollan)
-- Proyecto: [Peliculas2025-2](https://github.com/hugorollan/Peliculas2025-2)
-
----
-
-## 📚 Documentación Adicional
-
-- [IMPLEMENTATION.md](IMPLEMENTATION.md) - Documentación técnica detallada de la implementación
-- [SUMMARY.md](SUMMARY.md) - Resumen ejecutivo del proyecto
-- [NUEVAS_FUNCIONALIDADES.md](NUEVAS_FUNCIONALIDADES.md) - Detalles de las nuevas funcionalidades TMDb
-- [TEST_VERIFICATION.html](TEST_VERIFICATION.html) - Página de verificación de funcionalidades
+- Proyecto: [Quinto-Proyecto-Mejorando-nuestro-Netflix](https://github.com/hugorollan/Quinto-Proyecto-Mejorando-nuestro-Netflix)
 
 ## 🙏 Agradecimientos
 
-- **The Movie Database (TMDb)** por proporcionar una API gratuita y completa
-- **Google Fonts** por la fuente Roboto
-- La comunidad de desarrollo web por las mejores prácticas y patrones
+- **The Movie Database (TMDb)** por su API completa y gratuita
+- **MongoDB** por su excelente base de datos NoSQL
+- **Express.js** por el framework web simple y potente
+- La comunidad de desarrollo web por las mejores prácticas
+
+## 📚 Documentación Adicional
+
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - Referencia completa de la API
+- [SECURITY.md](./SECURITY.md) - Análisis de seguridad y mejores prácticas
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Guía de despliegue en producción
+- [DOM_REFACTORING_GUIDE.md](./DOM_REFACTORING_GUIDE.md) - Guía de refactorización DOM
+
+## 🆚 Versión Anterior vs Nueva
+
+| Característica | Versión Anterior | Nueva Versión |
+|----------------|------------------|---------------|
+| Almacenamiento | localStorage | MongoDB |
+| Usuarios | Single-user | Multi-usuario |
+| Autenticación | No | JWT + bcrypt |
+| Backend | Proxy simple | API REST completa |
+| Arquitectura | Monolítico | MVC modular |
+| Seguridad | Básica | XSS prevention, auth, validation |
+| Personalización | No | Ratings + notas personales |
+| Listas | Una sola | Múltiples listas |
+| Escalabilidad | Limitada | Alta |
 
 ---
 
