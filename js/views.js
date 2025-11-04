@@ -511,7 +511,7 @@ export const showView = (pelicula) => {
             const actorImage = actor.profile_path 
                 ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
                 : 'files/placeholder.png';
-            const actorName = typeof actor === 'string' ? actor : actor.name;
+            const actorName = typeof actor === 'string' ? actor : (actor.name || 'Actor desconocido');
             const character = actor.character ? `<div class="cast-character">${actor.character}</div>` : '';
             return `<div class="cast-item">
                 <img src="${actorImage}" alt="${actorName}" onerror="this.src='files/placeholder.png'" />
@@ -535,7 +535,8 @@ export const showView = (pelicula) => {
         const reviewsList = pelicula.reviews.map(review => {
             const ratingBadge = review.rating ? `<span style="background:#20b38e; color:white; padding:4px 10px; border-radius:16px; font-size:12px; font-weight:600;"><i class="fas fa-star"></i> ${review.rating}/10</span>` : '';
             const date = review.created_at ? new Date(review.created_at).toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
-            const truncatedContent = review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content;
+            const content = review.content || '';
+            const truncatedContent = content.length > 300 ? content.substring(0, 300) + '...' : content;
             return `
                 <div style="background:white; padding:18px; border-radius:12px; margin-bottom:14px; border-left:4px solid #01b4e4; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
