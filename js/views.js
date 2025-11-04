@@ -392,84 +392,208 @@ export const resultsView = (resultados, lastSearchQuery) => {
 };
 
 // SHOW VIEW - Shows detailed movie information
-// This is complex and uses innerHTML for now, will be refactored in a future iteration
 export const showView = (pelicula) => {
-    // For now, using a simplified safe version - full refactoring would be extensive
+    // Using innerHTML for complex layout - this matches the original comprehensive view
     const container = document.createElement('div');
     container.className = 'modal-bg';
     
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.maxWidth = '800px';
-    
-    // Title
-    const title = document.createElement('h2');
-    const filmIcon = document.createElement('i');
-    filmIcon.className = 'fas fa-film';
-    title.appendChild(filmIcon);
-    title.appendChild(document.createTextNode(' ' + (pelicula.titulo || 'Sin título')));
-    modal.appendChild(title);
-    
-    // Image
-    const img = document.createElement('img');
-    img.src = pelicula.miniatura;
-    img.style.width = '100%';
-    img.style.maxWidth = '300px';
-    img.style.borderRadius = '12px';
-    img.style.marginBottom = '20px';
-    img.onerror = function() { this.src = 'files/placeholder.png'; };
-    modal.appendChild(img);
-    
-    // Director and year
-    if (pelicula.director || pelicula.año) {
-        const info = document.createElement('p');
-        info.style.textAlign = 'left';
+    // Build rating circle SVG if rating exists
+    let ratingCircle = '';
+    if (typeof pelicula.rating === 'number' && !isNaN(pelicula.rating)) {
+        const percent = Math.max(0, Math.min(100, Math.round(pelicula.rating * 10)));
+        const radius = 28;
+        const stroke = 6;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference * (1 - percent / 100);
         
-        if (pelicula.director) {
-            const dirIcon = document.createElement('i');
-            dirIcon.className = 'fas fa-user-tie';
-            dirIcon.style.color = 'var(--tmdb-light-blue)';
-            info.appendChild(dirIcon);
-            info.appendChild(document.createTextNode(' '));
-            const strong = document.createElement('strong');
-            strong.textContent = 'Director: ';
-            info.appendChild(strong);
-            info.appendChild(document.createTextNode(pelicula.director));
-        }
+        // Color based on rating
+        let color = '#20b38e'; // Green by default
+        if (percent < 40) color = '#e85d30'; // Red
+        else if (percent < 70) color = '#ffc107'; // Yellow
         
-        if (pelicula.año) {
-            if (pelicula.director) {
-                info.appendChild(document.createElement('br'));
-            }
-            const yearIcon = document.createElement('i');
-            yearIcon.className = 'fas fa-calendar';
-            yearIcon.style.color = 'var(--tmdb-light-blue)';
-            info.appendChild(yearIcon);
-            info.appendChild(document.createTextNode(' '));
-            const strong = document.createElement('strong');
-            strong.textContent = 'Año: ';
-            info.appendChild(strong);
-            info.appendChild(document.createTextNode(pelicula.año));
-        }
-        
-        modal.appendChild(info);
+        ratingCircle = `
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                <svg width="70" height="70" style="display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+                    <circle cx="35" cy="35" r="${radius}" stroke="#eee" stroke-width="${stroke}" fill="white" />
+                    <circle cx="35" cy="35" r="${radius}" stroke="${color}" stroke-width="${stroke}" fill="none" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s; transform:rotate(-90deg); transform-origin:center;" />
+                    <text x="35" y="40" text-anchor="middle" font-size="16" fill="#222" font-weight="bold">${percent}%</text>
+                </svg>
+                <div>
+                    <div style="font-size:0.95rem; color:${color}; font-weight:600;"><i class="fas fa-users"></i> Puntuación usuarios</div>
+                    <div style="font-size:0.8rem; color:#666; margin-top:4px;">Basado en ${pelicula.vote_count || 'muchas'} valoraciones</div>
+                </div>
+            </div>
+        `;
     }
+
+    // Build tagline section
+    let taglineSection = '';
+    if (pelicula.tagline) {
+        taglineSection = `<p style="font-style:italic; color:#666; font-size:16px; margin-bottom:20px; text-align:left; padding-left:4px; border-left:4px solid var(--tmdb-light-blue);">"${pelicula.tagline}"</p>`;
+    }
+
+    // Build runtime section
+    let runtimeSection = '';
+    if (pelicula.runtime) {
+        const hours = Math.floor(pelicula.runtime / 60);
+        const minutes = pelicula.runtime % 60;
+        runtimeSection = `<p style="text-align:left;"><i class="fas fa-clock" style="color:var(--tmdb-light-blue);"></i> <strong>Duración:</strong> ${hours}h ${minutes}min</p>`;
+    }
+
+    // Build extra info section (language and popularity)
+    let extraInfoSection = '';
+    if (pelicula.original_language || pelicula.popularity) {
+        extraInfoSection = '<div style="margin-top:12px;">';
+        if (pelicula.original_language) {
+            const langNames = {
+                'en': 'Inglés', 'es': 'Español', 'fr': 'Francés', 'de': 'Alemán', 
+                'it': 'Italiano', 'ja': 'Japonés', 'ko': 'Coreano', 'zh': 'Chino',
+                'pt': 'Portugués', 'ru': 'Ruso'
+            };
+            const langName = langNames[pelicula.original_language] || pelicula.original_language.toUpperCase();
+            extraInfoSection += `<p style="text-align:left;"><i class="fas fa-language" style="color:var(--tmdb-light-blue);"></i> <strong>Idioma original:</strong> ${langName}</p>`;
+        }
+        if (pelicula.popularity) {
+            const popularityLevel = pelicula.popularity > 100 ? '🔥 Muy popular' : pelicula.popularity > 50 ? '⭐ Popular' : '📊 Moderada';
+            extraInfoSection += `<p style="text-align:left;"><i class="fas fa-chart-line" style="color:var(--tmdb-light-blue);"></i> <strong>Popularidad:</strong> ${popularityLevel} (${pelicula.popularity.toFixed(1)})</p>`;
+        }
+        extraInfoSection += '</div>';
+    }
+
+    // Build budget and revenue section
+    let budgetRevenueSection = '';
+    if (pelicula.budget || pelicula.revenue) {
+        budgetRevenueSection = '<div style="margin-top:12px; padding:16px; background:#f9f9f9; border-radius:12px;">';
+        budgetRevenueSection += '<p style="text-align:left; margin:0 0 8px 0;"><strong><i class="fas fa-dollar-sign" style="color:var(--tmdb-light-green);"></i> Información financiera</strong></p>';
+        if (pelicula.budget && pelicula.budget > 0) {
+            const budgetFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.budget);
+            budgetRevenueSection += `<p style="text-align:left; margin:4px 0;"><strong>Presupuesto:</strong> ${budgetFormatted}</p>`;
+        }
+        if (pelicula.revenue && pelicula.revenue > 0) {
+            const revenueFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(pelicula.revenue);
+            budgetRevenueSection += `<p style="text-align:left; margin:4px 0;"><strong>Recaudación:</strong> ${revenueFormatted}</p>`;
+            
+            // Calculate profit if both values exist
+            if (pelicula.budget && pelicula.budget > 0) {
+                const profit = pelicula.revenue - pelicula.budget;
+                const profitFormatted = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(profit);
+                const profitColor = profit > 0 ? '#20b38e' : '#e85d30';
+                budgetRevenueSection += `<p style="text-align:left; margin:8px 0 0 0; color:${profitColor}; font-weight:600;"><strong>Beneficio:</strong> ${profitFormatted}</p>`;
+            }
+        }
+        budgetRevenueSection += '</div>';
+    }
+
+    // Build trailer section
+    let trailerSection = '';
+    if (pelicula.trailerKey) {
+        trailerSection = `
+            <div style="margin-top:24px;">
+                <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-play-circle" style="color:var(--tmdb-light-blue);"></i> Trailer oficial</p>
+                <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.3);">
+                    <iframe 
+                        style="position:absolute; top:0; left:0; width:100%; height:100%;" 
+                        src="https://www.youtube.com/embed/${pelicula.trailerKey}" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        `;
+    }
+
+    // Build cast section
+    let castSection = '';
+    if (pelicula.cast && Array.isArray(pelicula.cast) && pelicula.cast.length > 0) {
+        const castList = pelicula.cast.slice(0, 8).map(actor => {
+            const actorImage = actor.profile_path 
+                ? `https://image.tmdb.org/t/p/w185${actor.profile_path}`
+                : 'files/placeholder.png';
+            const actorName = typeof actor === 'string' ? actor : actor.name;
+            const character = actor.character ? `<div class="cast-character">${actor.character}</div>` : '';
+            return `<div class="cast-item">
+                <img src="${actorImage}" alt="${actorName}" onerror="this.src='files/placeholder.png'" />
+                <div class="cast-name">${actorName}</div>
+                ${character}
+            </div>`;
+        }).join('');
+        castSection = `
+            <div style="margin-top:24px;">
+                <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-users" style="color:var(--tmdb-light-blue);"></i> Reparto principal</p>
+                <div class="cast-grid">
+                    ${castList}
+                </div>
+            </div>
+        `;
+    }
+
+    // Build reviews section
+    let reviewsSection = '';
+    if (pelicula.reviews && Array.isArray(pelicula.reviews) && pelicula.reviews.length > 0) {
+        const reviewsList = pelicula.reviews.map(review => {
+            const ratingBadge = review.rating ? `<span style="background:#20b38e; color:white; padding:4px 10px; border-radius:16px; font-size:12px; font-weight:600;"><i class="fas fa-star"></i> ${review.rating}/10</span>` : '';
+            const date = review.created_at ? new Date(review.created_at).toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
+            const truncatedContent = review.content.length > 300 ? review.content.substring(0, 300) + '...' : review.content;
+            return `
+                <div style="background:white; padding:18px; border-radius:12px; margin-bottom:14px; border-left:4px solid #01b4e4; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <strong style="color:#032541; font-size:15px;"><i class="fas fa-user-circle"></i> ${review.author}</strong>
+                        ${ratingBadge}
+                    </div>
+                    ${date ? `<div style="font-size:12px; color:#888; margin-bottom:10px;"><i class="far fa-calendar"></i> ${date}</div>` : ''}
+                    <p style="color:#444; font-size:13px; line-height:1.7; margin:0;">${truncatedContent}</p>
+                </div>
+            `;
+        }).join('');
+        reviewsSection = `
+            <div style="margin-top:24px;">
+                <p style="font-weight:600; margin-bottom:14px; text-align:left; font-size:18px;"><i class="fas fa-comment-dots" style="color:var(--tmdb-light-blue);"></i> Reseñas de usuarios</p>
+                ${reviewsList}
+            </div>
+        `;
+    }
+
+    // Build genres section
+    let genresSection = '';
+    if (pelicula.generos && pelicula.generos.length > 0) {
+        genresSection = `<p style="text-align:left;"><i class="fas fa-tags" style="color:var(--tmdb-light-blue);"></i> <strong>Géneros:</strong> ${pelicula.generos.map(g => `<span class="cast-badge">${g}</span>`).join(' ')}</p>`;
+    }
+
+    // Build synopsis section
+    let synopsisSection = '';
+    if (pelicula.resumen) {
+        synopsisSection = `<div style='margin:16px 0; padding:16px; background:#f9f9f9; border-radius:12px;'><p style='margin:0; color:#444; font-size:14px; text-align:left; line-height:1.7;'><strong><i class="fas fa-align-left" style="color:var(--tmdb-light-blue);"></i> Sinopsis:</strong><br><br>${pelicula.resumen}</p></div>`;
+    }
+
+    // Compose the full HTML
+    container.innerHTML = `
+        <div class="modal modal-horizontal">
+            <div class="modal-poster">
+                <img src="${pelicula.miniatura}" onerror="this.src='files/placeholder.png'" />
+            </div>
+            <div class="modal-info">
+                <h2 style="margin-top:0; margin-bottom:12px; text-align:left; color:var(--tmdb-dark-blue); font-size:28px;">${pelicula.titulo || "<em>Sin título</em>"}</h2>
+                ${taglineSection}
+                <p style="text-align:left;"><i class="fas fa-user-tie" style="color:var(--tmdb-light-blue);"></i> <strong>Director:</strong> ${pelicula.director || "<em>Sin director</em>"}</p>
+                <p style="text-align:left;"><i class="fas fa-calendar-alt" style="color:var(--tmdb-light-blue);"></i> <strong>Año:</strong> ${pelicula.año || "<em>Sin año</em>"}</p>
+                ${runtimeSection}
+                ${extraInfoSection}
+                ${ratingCircle}
+                ${genresSection}
+                ${budgetRevenueSection}
+                ${synopsisSection}
+                ${trailerSection}
+                ${castSection}
+                ${reviewsSection}
+                <div class="actions" style="justify-content:flex-start; margin-top:28px;">
+                    <button class="index"><i class="fas fa-arrow-left"></i> Volver</button>
+                </div>
+            </div>
+        </div>
+    `;
     
-    // Back button
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'actions';
-    
-    const backBtn = document.createElement('button');
-    backBtn.className = 'index';
-    const backIcon = document.createElement('i');
-    backIcon.className = 'fas fa-arrow-left';
-    backBtn.appendChild(backIcon);
-    backBtn.appendChild(document.createTextNode(' Volver'));
-    
-    buttonContainer.appendChild(backBtn);
-    modal.appendChild(buttonContainer);
-    
-    container.appendChild(modal);
     return container;
 };
 
