@@ -1,6 +1,0 @@
-nohup: ignoring input
-[dotenv@17.2.3] injecting env (5) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
-Server running on http://localhost:3000
-✓ TMDB_API_KEY is configured
-✗ MongoDB connection error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017
-⚠️  Running in fallback mode (localStorage only)
