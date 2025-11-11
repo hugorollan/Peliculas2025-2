@@ -546,6 +546,7 @@ div.actions {
 }
 
 .cast-character {
+    display: block;
     color: #666;
     font-weight: 400;
 }
@@ -592,6 +593,7 @@ div.actions {
 }
 
 .cast-name {
+    display: block;
     font-size: 13px;
     font-weight: 700;
     color: #1a1a1a;
@@ -601,6 +603,7 @@ div.actions {
 }
 
 .cast-item .cast-character {
+    display: block;
     font-size: 11px;
     color: #666;
     font-style: italic;
